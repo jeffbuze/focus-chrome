@@ -1,0 +1,194 @@
+// background/rule-engine.js — Translates group state into declarativeNetRequest rules
+import {
+  getGroups, getNextRuleId, saveNextRuleId,
+  getRuleIdMap, saveRuleIdMap, getPause,
+  getTrackingEntry, todayDateStr, getAllActivePauses,
+} from '../shared/storage.js';
+
+const DAY_NAMES = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'];
+
+export function sitePatternToUrlFilter(pattern) {
+  // "facebook.com" → "||facebook.com/"
+  // "reddit.com/r/funny" → "||reddit.com/r/funny"
+  if (pattern.includes('/')) {
+    return `||${pattern}`;
+  }
+  return `||${pattern}/`;
+}
+
+export function getCurrentDayStr() {
+  return DAY_NAMES[new Date().getDay()];
+}
+
+export function getCurrentTimeMinutes() {
+  const now = new Date();
+  return now.getHours() * 60 + now.getMinutes();
+}
+
+function timeStrToMinutes(timeStr) {
+  const [h, m] = timeStr.split(':').map(Number);
+  return h * 60 + m;
+}
+
+export function isInsideTimeBlock(block) {
+  const currentDay = getCurrentDayStr();
+  if (!block.days.includes(currentDay)) return false;
+
+  const now = getCurrentTimeMinutes();
+  const start = timeStrToMinutes(block.startTime);
+  const end = timeStrToMinutes(block.endTime);
+  return now >= start && now <= end;
+}
+
+export async function getActiveBlockForGroup(group) {
+  const today = getCurrentDayStr();
+  const nowMinutes = getCurrentTimeMinutes();
+
+  for (const block of group.allowedTimeBlocks) {
+    if (!block.days.includes(today)) continue;
+    const start = timeStrToMinutes(block.startTime);
+    const end = timeStrToMinutes(block.endTime);
+    if (nowMinutes >= start && nowMinutes <= end) {
+      return block;
+    }
+  }
+  return null;
+}
+
+export async function shouldGroupBlockNow(group) {
+  if (!group.enabled) return { block: false, reason: 'disabled' };
+
+  // Check pause
+  const pause = await getPause(group.id);
+  if (pause && pause.pausedUntil > Date.now()) {
+    return { block: false, reason: 'paused', pausedUntil: pause.pausedUntil };
+  }
+
+  // No time blocks → always block
+  if (group.allowedTimeBlocks.length === 0) {
+    return { block: true, reason: 'always-blocked' };
+  }
+
+  // Check if inside any active time block
+  const activeBlock = await getActiveBlockForGroup(group);
+  if (!activeBlock) {
+    return { block: true, reason: 'outside-schedule' };
+  }
+
+  // Inside active block — check budget
+  const dateStr = todayDateStr();
+  const tracking = await getTrackingEntry(group.id, dateStr, activeBlock.id);
+  const usedMinutes = tracking.usedSeconds / 60;
+
+  if (usedMinutes >= activeBlock.allowedMinutes) {
+    return { block: true, reason: 'budget-exhausted', allowedMinutes: activeBlock.allowedMinutes };
+  }
+
+  return {
+    block: false,
+    reason: 'allowed',
+    activeBlock,
+    remainingSeconds: (activeBlock.allowedMinutes * 60) - tracking.usedSeconds,
+  };
+}
+
+export function doesUrlMatchSite(hostname, pathname, site) {
+  const pattern = site.pattern;
+  const patternParts = pattern.split('/');
+  const patternDomain = patternParts[0];
+  const patternPath = patternParts.length > 1 ? '/' + patternParts.slice(1).join('/') : null;
+
+  // Subdomain-inclusive matching: hostname must equal or end with .pattern
+  const hostLower = hostname.toLowerCase();
+  const domainLower = patternDomain.toLowerCase();
+
+  if (hostLower !== domainLower && !hostLower.endsWith('.' + domainLower)) {
+    return false;
+  }
+
+  // Path prefix matching if pattern has a path
+  if (patternPath) {
+    const pathLower = pathname.toLowerCase();
+    if (!pathLower.startsWith(patternPath.toLowerCase())) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
+export function findMatchingGroups(url, groups) {
+  let hostname, pathname;
+  try {
+    const parsed = new URL(url);
+    hostname = parsed.hostname;
+    pathname = parsed.pathname;
+  } catch {
+    return [];
+  }
+
+  const matches = [];
+  for (const group of groups) {
+    if (!group.enabled) continue;
+    for (const site of group.sites) {
+      if (doesUrlMatchSite(hostname, pathname, site)) {
+        matches.push(group);
+        break;
+      }
+    }
+  }
+  return matches;
+}
+
+export async function rebuildAllRules() {
+  const groups = await getGroups();
+  const addRules = [];
+  let nextId = await getNextRuleId();
+  const newRuleIdMap = {};
+
+  for (const group of groups) {
+    if (!group.enabled) continue;
+
+    const decision = await shouldGroupBlockNow(group);
+    if (!decision.block) continue;
+
+    // Generate a redirect rule for each site in the group
+    for (const site of group.sites) {
+      const urlFilter = sitePatternToUrlFilter(site.pattern);
+      const redirectUrl = chrome.runtime.getURL(
+        `blocked/blocked.html?group=${encodeURIComponent(group.name)}&groupId=${encodeURIComponent(group.id)}&reason=${encodeURIComponent(decision.reason)}&allowedMinutes=${decision.allowedMinutes || ''}`
+      );
+
+      addRules.push({
+        id: nextId,
+        priority: 1,
+        action: {
+          type: 'redirect',
+          redirect: { url: redirectUrl },
+        },
+        condition: {
+          urlFilter,
+          resourceTypes: ['main_frame'],
+        },
+      });
+
+      newRuleIdMap[`${group.id}::${site.id}`] = nextId;
+      nextId++;
+    }
+  }
+
+  // Get existing dynamic rules to remove
+  const existingRules = await chrome.declarativeNetRequest.getDynamicRules();
+  const removeRuleIds = existingRules.map(r => r.id);
+
+  // Atomically update rules
+  await chrome.declarativeNetRequest.updateDynamicRules({
+    removeRuleIds,
+    addRules,
+  });
+
+  await saveRuleIdMap(newRuleIdMap);
+  await saveNextRuleId(nextId);
+
+  return { addedCount: addRules.length, removedCount: removeRuleIds.length };
+}

@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Focus Guard</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <div class="popup">
+    <header class="popup-header">
+      <span class="logo">🛡️</span>
+      <h1>Focus Guard</h1>
+    </header>
+
+    <!-- Status section shown when on a matched site -->
+    <section class="status-section" id="statusSection" style="display:none;">
+      <div class="status-card" id="statusCard">
+        <span class="status-indicator" id="statusIndicator"></span>
+        <div class="status-info">
+          <p class="status-group" id="statusGroup"></p>
+          <p class="status-detail" id="statusDetail"></p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Pause section -->
+    <section class="pause-section" id="pauseSection" style="display:none;">
+      <h2>Pause Focus Mode</h2>
+      <p class="pause-instruction">Type the phrase below to enable pause:</p>
+      <p class="pause-phrase">"I know I should be focusing, but I need to do something important right now instead."</p>
+      <input type="text" id="pauseInput" class="pause-input" placeholder="Type the phrase above..." autocomplete="off">
+      <div class="pause-buttons" id="pauseButtons">
+        <button class="pause-btn" data-minutes="5" disabled>5 min</button>
+        <button class="pause-btn" data-minutes="10" disabled>10 min</button>
+        <button class="pause-btn" data-minutes="25" disabled>25 min</button>
+      </div>
+    </section>
+
+    <!-- Active pause info -->
+    <section class="active-pause-section" id="activePauseSection" style="display:none;">
+      <div class="active-pause-card">
+        <p class="active-pause-text">⏸️ Paused for <span id="pauseRemaining"></span></p>
+      </div>
+    </section>
+
+    <!-- No match section -->
+    <section class="no-match-section" id="noMatchSection" style="display:none;">
+      <p class="no-match-text">This site isn't in any blocking group.</p>
+    </section>
+
+    <footer class="popup-footer">
+      <a href="#" id="openDashboard" class="dashboard-link">Open Dashboard</a>
+    </footer>
+  </div>
+
+  <script src="popup.js" type="module"></script>
+</body>
+</html>

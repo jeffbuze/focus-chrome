@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Focus Guard — Dashboard</title>
+  <link rel="stylesheet" href="dashboard.css">
+</head>
+<body>
+  <div class="layout">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <span class="logo">🛡️</span>
+        <h1>Focus Guard</h1>
+      </div>
+      <div class="group-list" id="groupList"></div>
+      <button class="add-group-btn" id="addGroupBtn">+ Add Group</button>
+    </aside>
+
+    <!-- Main content -->
+    <main class="main" id="mainContent">
+      <div class="empty-state" id="emptyState">
+        <div class="empty-icon">🛡️</div>
+        <h2>Welcome to Focus Guard</h2>
+        <p>Create your first group to start blocking distracting websites.</p>
+        <button class="btn btn-primary" id="emptyAddGroupBtn">Create a Group</button>
+      </div>
+
+      <div class="group-detail" id="groupDetail" style="display:none;">
+        <!-- Header -->
+        <div class="detail-header">
+          <div class="detail-header-left">
+            <input type="text" class="group-name-input" id="groupNameInput" value="" placeholder="Group Name">
+            <label class="toggle-switch">
+              <input type="checkbox" id="groupEnabledToggle">
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
+          <button class="btn btn-danger-outline" id="deleteGroupBtn">Delete</button>
+        </div>
+
+        <!-- Blocked Sites -->
+        <section class="detail-section">
+          <h2>Blocked Sites</h2>
+          <div class="chips" id="siteChips"></div>
+          <div class="add-site-form">
+            <input type="text" id="siteInput" placeholder="e.g. facebook.com or reddit.com/r/funny" class="site-input">
+            <button class="btn btn-primary btn-sm" id="addSiteBtn">Add</button>
+          </div>
+          <p class="inline-error" id="siteError"></p>
+        </section>
+
+        <!-- Allowed Time Windows -->
+        <section class="detail-section">
+          <h2>Allowed Time Windows</h2>
+          <div id="timeBlocksList"></div>
+          <div id="timeBlockForm" style="display:none;" class="time-block-form">
+            <div class="form-group">
+              <label>Days</label>
+              <div class="day-checkboxes" id="dayCheckboxes">
+                <label><input type="checkbox" value="mon"> Mon</label>
+                <label><input type="checkbox" value="tue"> Tue</label>
+                <label><input type="checkbox" value="wed"> Wed</label>
+                <label><input type="checkbox" value="thu"> Thu</label>
+                <label><input type="checkbox" value="fri"> Fri</label>
+                <label><input type="checkbox" value="sat"> Sat</label>
+                <label><input type="checkbox" value="sun"> Sun</label>
+              </div>
+              <div class="day-actions">
+                <button type="button" class="btn btn-link btn-xs" id="selectAllDays">Select All</button>
+                <button type="button" class="btn btn-link btn-xs" id="deselectAllDays">Deselect All</button>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label>
+                <input type="checkbox" id="allDayCheck"> All Day
+              </label>
+            </div>
+
+            <div class="form-row" id="timeInputRow">
+              <div class="form-group">
+                <label>Start Time</label>
+                <input type="time" id="startTimeInput" value="09:00">
+              </div>
+              <div class="form-group">
+                <label>End Time</label>
+                <input type="time" id="endTimeInput" value="17:00">
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label>Allowed Minutes</label>
+              <input type="number" id="allowedMinutesInput" value="15" min="1" class="minutes-input">
+            </div>
+
+            <div class="form-actions">
+              <button class="btn btn-primary btn-sm" id="saveTimeBlockBtn">Save</button>
+              <button class="btn btn-outline btn-sm" id="cancelTimeBlockBtn">Cancel</button>
+            </div>
+          </div>
+          <button class="btn btn-outline btn-sm" id="addTimeBlockBtn">+ Add Time Window</button>
+        </section>
+
+        <!-- Today's Usage -->
+        <section class="detail-section">
+          <h2>Today's Usage</h2>
+          <div id="usageSection"></div>
+        </section>
+      </div>
+    </main>
+  </div>
+
+  <!-- Delete confirmation dialog -->
+  <div class="modal-overlay" id="deleteModal" style="display:none;">
+    <div class="modal">
+      <h3>Delete Group</h3>
+      <p>Are you sure you want to delete "<span id="deleteGroupName"></span>"? This cannot be undone.</p>
+      <div class="modal-actions">
+        <button class="btn btn-danger" id="confirmDeleteBtn">Delete</button>
+        <button class="btn btn-outline" id="cancelDeleteBtn">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Saved indicator -->
+  <div class="saved-indicator" id="savedIndicator">Saved</div>
+
+  <script src="dashboard.js" type="module"></script>
+</body>
+</html>
