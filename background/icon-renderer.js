@@ -1,7 +1,7 @@
 // background/icon-renderer.js — Draws state-colored road-closed sign icons at runtime
 
 const COLORS = {
-  default: '#4A90D9',  // Blue - no match
+  default: '#EA4335',  // Red - road closed sign
   timer: '#34A853',    // Green - tracking with time remaining
   urgent: '#F4B400',   // Orange - ≤60s remaining
   blocked: '#EA4335',  // Red - blocked
@@ -63,7 +63,7 @@ export function getIconImageData(state) {
   };
 }
 
-export async function updateIcon(state, badgeText = '', badgeBgColor = '#4A90D9') {
+export async function updateIcon(state, badgeText = '', badgeBgColor = '#EA4335') {
   try {
     const imageData = getIconImageData(state);
     await chrome.action.setIcon({ imageData });
