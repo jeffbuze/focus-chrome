@@ -16,6 +16,21 @@ export function sitePatternToUrlFilter(pattern) {
   return `||${pattern}/`;
 }
 
+export function sitePatternToRegexFilter(pattern) {
+  // "facebook.com" → "^https?://([a-zA-Z0-9-]+\\.)*facebook\\.com/"
+  // "reddit.com/r/funny" → "^https?://([a-zA-Z0-9-]+\\.)*reddit\\.com/r/funny"
+  const parts = pattern.split('/');
+  const domain = parts[0];
+  const path = parts.length > 1 ? '/' + parts.slice(1).join('/') : '/';
+
+  // Escape regex-special chars in domain (dots become \.)
+  const escapedDomain = domain.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  // Escape regex-special chars in path
+  const escapedPath = path.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+  return `^https?://([a-zA-Z0-9-]+\\.)*${escapedDomain}${escapedPath}`;
+}
+
 export function getCurrentDayStr() {
   return DAY_NAMES[new Date().getDay()];
 }
@@ -154,9 +169,9 @@ export async function rebuildAllRules() {
 
     // Generate a redirect rule for each site in the group
     for (const site of group.sites) {
-      const urlFilter = sitePatternToUrlFilter(site.pattern);
-      const redirectUrl = chrome.runtime.getURL(
-        `blocked/blocked.html?group=${encodeURIComponent(group.name)}&groupId=${encodeURIComponent(group.id)}&reason=${encodeURIComponent(decision.reason)}&allowedMinutes=${decision.allowedMinutes || ''}`
+      const regexFilter = sitePatternToRegexFilter(site.pattern);
+      const baseRedirectUrl = chrome.runtime.getURL(
+        `blocked/blocked.html?group=${encodeURIComponent(group.name)}&groupId=${encodeURIComponent(group.id)}&reason=${encodeURIComponent(decision.reason)}&allowedMinutes=${decision.allowedMinutes || ''}&url=`
       );
 
       addRules.push({
@@ -164,10 +179,10 @@ export async function rebuildAllRules() {
         priority: 1,
         action: {
           type: 'redirect',
-          redirect: { url: redirectUrl },
+          redirect: { regexSubstitution: baseRedirectUrl + '\\0' },
         },
         condition: {
-          urlFilter,
+          regexFilter,
           resourceTypes: ['main_frame'],
         },
       });
