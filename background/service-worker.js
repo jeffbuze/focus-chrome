@@ -71,6 +71,14 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     return true; // async response
   }
 
+  if (message.type === 'pause-ended') {
+    chrome.alarms.clear(`${ALARM_PAUSE_PREFIX}${message.groupId}`)
+      .then(() => handlePauseExpiry(message.groupId))
+      .then(() => sendResponse({ ok: true }))
+      .catch((e) => sendResponse({ ok: false, error: e.message }));
+    return true;
+  }
+
   if (message.type === 'get-tracking-state') {
     sendResponse({ state: getTrackingState() });
     return false;

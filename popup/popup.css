@@ -165,6 +165,24 @@ body {
   font-weight: 500;
 }
 
+.end-pause-btn {
+  margin-top: 8px;
+  padding: 6px 16px;
+  border: 1px solid #5c6bc0;
+  border-radius: 6px;
+  background: transparent;
+  color: #5c6bc0;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.end-pause-btn:hover {
+  background: #5c6bc0;
+  color: white;
+}
+
 /* No match */
 .no-match-section {
   margin-bottom: 12px;

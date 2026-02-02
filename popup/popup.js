@@ -156,6 +156,15 @@ function showActivePause(pausedUntil) {
 
   updateRemaining();
   const interval = setInterval(updateRemaining, 1000);
+
+  document.getElementById('endPauseBtn').addEventListener('click', async () => {
+    await chrome.runtime.sendMessage({
+      type: 'pause-ended',
+      groupId: currentGroupId,
+    });
+    clearInterval(interval);
+    window.close();
+  });
 }
 
 function setupPauseSection(groupId) {
