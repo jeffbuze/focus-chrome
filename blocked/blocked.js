@@ -36,13 +36,28 @@ function displayReason() {
       el.textContent = 'No access window is currently active for this group.';
       break;
     default:
-      el.textContent = 'This site is currently blocked by Focus Guard.';
+      el.textContent = 'This site is currently blocked by BlankSlate Focus.';
   }
 }
 
 // Display meta information
 function displayMeta() {
-  const urlParam = params.get('url') || '';
+  // Try encoded url param first (from time-tracker paths)
+  let urlParam = params.get('url') || '';
+
+  // Also extract raw substring after &url= for DNR regexSubstitution,
+  // which appends the matched URL unencoded (e.g. &url=https://reddit.com/r/funny?sort=hot)
+  const rawSearch = window.location.search;
+  const urlMarker = '&url=';
+  const markerIdx = rawSearch.indexOf(urlMarker);
+  if (markerIdx !== -1) {
+    const rawValue = rawSearch.substring(markerIdx + urlMarker.length);
+    // If the raw value starts with an unencoded scheme, use it instead
+    if (rawValue.startsWith('http://') || rawValue.startsWith('https://')) {
+      urlParam = rawValue;
+    }
+  }
+
   const referrer = document.referrer || '';
   // Prefer the explicit url param, fall back to referrer
   const originalUrl = urlParam || (referrer && !referrer.includes('chrome-extension://') ? referrer : '');

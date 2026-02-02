@@ -113,7 +113,7 @@ async function initialize() {
     // Evaluate current tab
     await evaluateCurrentTab();
   } catch (e) {
-    console.error('Focus Guard initialization error:', e);
+    console.error('BlankSlate Focus initialization error:', e);
   }
 }
 
