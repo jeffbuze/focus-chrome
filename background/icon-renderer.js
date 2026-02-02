@@ -1,4 +1,4 @@
-// background/icon-renderer.js — Draws state-colored shield icons at runtime
+// background/icon-renderer.js — Draws state-colored road-closed sign icons at runtime
 
 const COLORS = {
   default: '#4A90D9',  // Blue - no match
@@ -8,58 +8,48 @@ const COLORS = {
   paused: '#9E9E9E',   // Gray - paused
 };
 
-function drawShield(ctx, size, color) {
+function drawRoadClosed(ctx, size, color) {
   const s = size;
+  const cx = s / 2;
+  const cy = s / 2;
   ctx.clearRect(0, 0, s, s);
 
+  // Outer filled circle (state color)
+  const radius = s * 0.46;
   ctx.beginPath();
-  // Shield path scaled to size
-  const cx = s / 2;
-  const top = s * 0.05;
-  const sideTop = s * 0.15;
-  const sideX = s * 0.1;
-  const rightX = s * 0.9;
-  const midY = s * 0.55;
-  const bottomY = s * 0.95;
-
-  ctx.moveTo(cx, top);
-  ctx.lineTo(rightX, sideTop);
-  ctx.lineTo(rightX, midY);
-  ctx.quadraticCurveTo(rightX, bottomY * 0.85, cx, bottomY);
-  ctx.quadraticCurveTo(sideX, bottomY * 0.85, sideX, midY);
-  ctx.lineTo(sideX, sideTop);
-  ctx.closePath();
-
+  ctx.arc(cx, cy, radius, 0, Math.PI * 2);
   ctx.fillStyle = color;
   ctx.fill();
 
-  // Inner highlight
+  // Inner white circle (creates ring effect)
+  const ringThickness = s * 0.12;
   ctx.beginPath();
-  const inset = s * 0.08;
-  const innerCx = cx;
-  const innerTop = top + inset;
-  const innerSideTop = sideTop + inset * 0.5;
-  const innerSideX = sideX + inset;
-  const innerRightX = rightX - inset;
-  const innerMidY = midY - inset * 0.3;
-  const innerBottomY = bottomY - inset;
+  ctx.arc(cx, cy, radius - ringThickness, 0, Math.PI * 2);
+  ctx.fillStyle = '#FFFFFF';
+  ctx.fill();
 
-  ctx.moveTo(innerCx, innerTop);
-  ctx.lineTo(innerRightX, innerSideTop);
-  ctx.lineTo(innerRightX, innerMidY);
-  ctx.quadraticCurveTo(innerRightX, innerBottomY * 0.85, innerCx, innerBottomY);
-  ctx.quadraticCurveTo(innerSideX, innerBottomY * 0.85, innerSideX, innerMidY);
-  ctx.lineTo(innerSideX, innerSideTop);
+  // Horizontal rounded-rect bar across center
+  const barHeight = s * 0.14;
+  const barWidth = (radius - ringThickness) * 2 * 0.75;
+  const barX = cx - barWidth / 2;
+  const barY = cy - barHeight / 2;
+  const barRadius = barHeight / 2;
+
+  ctx.beginPath();
+  ctx.moveTo(barX + barRadius, barY);
+  ctx.lineTo(barX + barWidth - barRadius, barY);
+  ctx.arc(barX + barWidth - barRadius, barY + barRadius, barRadius, -Math.PI / 2, Math.PI / 2);
+  ctx.lineTo(barX + barRadius, barY + barHeight);
+  ctx.arc(barX + barRadius, barY + barRadius, barRadius, Math.PI / 2, -Math.PI / 2);
   ctx.closePath();
-
-  ctx.fillStyle = 'rgba(255,255,255,0.2)';
+  ctx.fillStyle = '#2A2A2A';
   ctx.fill();
 }
 
 function createIconImageData(size, color) {
   const canvas = new OffscreenCanvas(size, size);
   const ctx = canvas.getContext('2d');
-  drawShield(ctx, size, color);
+  drawRoadClosed(ctx, size, color);
   return ctx.getImageData(0, 0, size, size);
 }
 
