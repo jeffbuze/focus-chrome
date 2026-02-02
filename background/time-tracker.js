@@ -60,9 +60,17 @@ export async function evaluateCurrentTab() {
     const decision = await shouldGroupBlockNow(group);
 
     if (decision.block) {
-      // Already blocked — show red icon
       await stopTracking();
       await updateIcon('blocked', 'X', '#EA4335');
+      // Redirect already-open tab to block page
+      const redirectUrl = chrome.runtime.getURL(
+        `blocked/blocked.html?group=${encodeURIComponent(group.name)}&groupId=${encodeURIComponent(group.id)}&reason=${encodeURIComponent(decision.reason)}&allowedMinutes=${decision.allowedMinutes || ''}`
+      );
+      try {
+        await chrome.tabs.update(tab.id, { url: redirectUrl });
+      } catch (e) {
+        // Tab may have closed between query and update
+      }
       return;
     }
 
