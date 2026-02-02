@@ -69,10 +69,6 @@ export async function updateGroup(groupId, updates) {
   return groups[idx];
 }
 
-export async function toggleGroup(groupId, enabled) {
-  return updateGroup(groupId, { enabled });
-}
-
 // ── Site Management ─────────────────────────────────────────────────────
 
 export async function addSiteToGroup(groupId, rawPattern) {

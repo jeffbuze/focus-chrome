@@ -3,7 +3,7 @@ import {
   getGroups, onStorageChanged, todayDateStr, getTrackingEntry,
 } from '../shared/storage.js';
 import {
-  createGroup, deleteGroup, updateGroup, toggleGroup,
+  createGroup, deleteGroup, updateGroup,
   addSiteToGroup, removeSiteFromGroup,
   addTimeBlock, updateTimeBlock, removeTimeBlock,
   normalizeSitePattern,
@@ -67,14 +67,6 @@ function setupEventListeners() {
         showSaved();
       }
     }, 300);
-  });
-
-  // Group toggle (immediate save)
-  document.getElementById('groupEnabledToggle').addEventListener('change', (e) => {
-    if (selectedGroupId) {
-      toggleGroup(selectedGroupId, e.target.checked);
-      showSaved();
-    }
   });
 
   // Delete group
@@ -150,7 +142,7 @@ function renderSidebar() {
 
   groups.forEach(group => {
     const item = document.createElement('div');
-    item.className = `group-item${group.id === selectedGroupId ? ' active' : ''}${!group.enabled ? ' disabled' : ''}`;
+    item.className = `group-item${group.id === selectedGroupId ? ' active' : ''}`;
     item.dataset.id = group.id;
 
     item.innerHTML = `
@@ -185,7 +177,6 @@ function showEmptyState() {
 async function renderGroupDetail(group) {
   // Header
   document.getElementById('groupNameInput').value = group.name;
-  document.getElementById('groupEnabledToggle').checked = group.enabled;
 
   // Sites
   renderSiteChips(group);

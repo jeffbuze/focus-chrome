@@ -1,6 +1,6 @@
 // background/service-worker.js — Orchestrates all background modules
 import {
-  getGroups, getSettings, saveSettings, onStorageChanged,
+  getGroups, saveGroups, getSettings, saveSettings, onStorageChanged,
   setPause, clearPause, getAllActivePauses, todayDateStr,
 } from '../shared/storage.js';
 import { rebuildAllRules, findMatchingGroups, shouldGroupBlockNow } from './rule-engine.js';
@@ -25,6 +25,15 @@ chrome.runtime.onInstalled.addListener(async (details) => {
       chrome.tabs.create({ url: chrome.runtime.getURL('dashboard/dashboard.html') });
     }
   }
+
+  // Migrate: ensure all groups are enabled (toggle was removed)
+  const groups = await getGroups();
+  const needsMigration = groups.some(g => !g.enabled);
+  if (needsMigration) {
+    groups.forEach(g => { g.enabled = true; });
+    await saveGroups(groups);
+  }
+
   await initialize();
 });
 

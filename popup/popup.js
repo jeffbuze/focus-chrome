@@ -130,9 +130,6 @@ function showStatus(group, decision) {
       const mins = Math.ceil(remaining / 60);
       detailEl.textContent = `${mins}m remaining`;
     }
-  } else if (decision.reason === 'disabled') {
-    indicator.className = 'status-indicator paused';
-    detailEl.textContent = 'Group is disabled';
   }
 }
 

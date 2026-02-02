@@ -71,8 +71,6 @@ export async function getActiveBlockForGroup(group) {
 }
 
 export async function shouldGroupBlockNow(group) {
-  if (!group.enabled) return { block: false, reason: 'disabled' };
-
   // Check pause
   const pause = await getPause(group.id);
   if (pause && pause.pausedUntil > Date.now()) {
@@ -144,7 +142,6 @@ export function findMatchingGroups(url, groups) {
 
   const matches = [];
   for (const group of groups) {
-    if (!group.enabled) continue;
     for (const site of group.sites) {
       if (doesUrlMatchSite(hostname, pathname, site)) {
         matches.push(group);
@@ -162,8 +159,6 @@ export async function rebuildAllRules() {
   const newRuleIdMap = {};
 
   for (const group of groups) {
-    if (!group.enabled) continue;
-
     const decision = await shouldGroupBlockNow(group);
     if (!decision.block) continue;
 

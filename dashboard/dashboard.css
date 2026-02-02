@@ -112,10 +112,6 @@ body {
   color: var(--bs-text);
 }
 
-.group-item.disabled .group-item-name {
-  opacity: 0.5;
-}
-
 .group-item-badge {
   font-size: 11px;
   font-family: var(--bs-font-mono);
@@ -216,50 +212,6 @@ body {
 
 .group-name-input:focus {
   border-bottom-color: var(--bs-primary);
-}
-
-/* Toggle switch */
-.toggle-switch {
-  position: relative;
-  display: inline-block;
-  width: 44px;
-  height: 24px;
-  flex-shrink: 0;
-}
-
-.toggle-switch input {
-  opacity: 0;
-  width: 0;
-  height: 0;
-}
-
-.toggle-slider {
-  position: absolute;
-  cursor: pointer;
-  inset: 0;
-  background: var(--bs-border);
-  border-radius: 24px;
-  transition: 0.2s;
-}
-
-.toggle-slider::before {
-  content: "";
-  position: absolute;
-  height: 18px;
-  width: 18px;
-  left: 3px;
-  bottom: 3px;
-  background: white;
-  border-radius: 50%;
-  transition: 0.2s;
-}
-
-.toggle-switch input:checked + .toggle-slider {
-  background: var(--bs-primary);
-}
-
-.toggle-switch input:checked + .toggle-slider::before {
-  transform: translateX(20px);
 }
 
 /* Sections */
