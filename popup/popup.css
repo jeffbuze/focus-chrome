@@ -47,8 +47,8 @@ body {
 
 .popup-header .logo {
   font-size: 20px;
-  color: var(--bs-primary);
-  font-weight: 300;
+  display: flex;
+  align-items: center;
 }
 
 .popup-header h1 {

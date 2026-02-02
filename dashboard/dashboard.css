@@ -67,8 +67,8 @@ body {
 
 .sidebar-header .logo {
   font-size: 24px;
-  color: var(--bs-primary);
-  font-weight: 300;
+  display: flex;
+  align-items: center;
 }
 
 .sidebar-header h1 {
