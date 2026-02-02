@@ -31,6 +31,31 @@ async function init() {
   }
 
   const url = tabs[0].url;
+
+  // Detect our blocked page
+  if (url.startsWith('chrome-extension://') && url.includes('blocked/blocked.html')) {
+    const blockedParams = new URL(url).searchParams;
+    const groupId = blockedParams.get('groupId');
+    const groups = await getGroups();
+    const group = groups.find(g => g.id === groupId);
+    if (group) {
+      currentGroupId = group.id;
+      const decision = await shouldGroupBlockNow(group);
+      showStatus(group, decision);
+      // Check for active pause
+      const pause = await getPause(group.id);
+      if (pause && pause.pausedUntil > Date.now()) {
+        showActivePause(pause.pausedUntil);
+        return;
+      }
+      // Show pause option
+      setupPauseSection(group.id);
+      return;
+    }
+    showNoMatch();
+    return;
+  }
+
   if (url.startsWith('chrome://') || url.startsWith('chrome-extension://') || url.startsWith('about:')) {
     showNoMatch();
     return;

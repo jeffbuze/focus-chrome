@@ -42,13 +42,29 @@ function displayReason() {
 
 // Display meta information
 function displayMeta() {
+  const urlParam = params.get('url') || '';
   const referrer = document.referrer || '';
-  // Try to extract the original URL from the referrer or show group info
+  // Prefer the explicit url param, fall back to referrer
+  const originalUrl = urlParam || (referrer && !referrer.includes('chrome-extension://') ? referrer : '');
+
+  const rowEl = document.getElementById('blockedUrlRow');
   const urlEl = document.getElementById('blockedUrl');
-  if (referrer && !referrer.includes('chrome-extension://')) {
-    urlEl.textContent = referrer;
-  } else {
-    urlEl.textContent = '';
+
+  if (originalUrl) {
+    urlEl.textContent = originalUrl;
+    rowEl.style.display = 'flex';
+
+    document.getElementById('copyUrlBtn').addEventListener('click', async () => {
+      try {
+        await navigator.clipboard.writeText(originalUrl);
+        const btn = document.getElementById('copyUrlBtn');
+        const original = btn.textContent;
+        btn.textContent = 'Copied!';
+        setTimeout(() => { btn.textContent = original; }, 1500);
+      } catch {
+        // clipboard write may fail in some contexts
+      }
+    });
   }
 
   document.getElementById('groupName').innerHTML = `Group: <strong>${escapeHtml(groupName)}</strong>`;

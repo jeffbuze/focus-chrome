@@ -36,7 +36,14 @@ export async function evaluateCurrentTab() {
   const tab = tabs[0];
   const url = tab.url;
 
-  // Skip chrome:// and extension pages
+  // Detect if we're on our own blocked page
+  if (url.startsWith('chrome-extension://') && url.includes('blocked/blocked.html')) {
+    await stopTracking();
+    await updateIcon('blocked', 'X', '#EA4335');
+    return;
+  }
+
+  // Skip chrome:// and other extension pages
   if (url.startsWith('chrome://') || url.startsWith('chrome-extension://') || url.startsWith('about:')) {
     await stopTracking();
     await updateIcon('default');
@@ -64,7 +71,7 @@ export async function evaluateCurrentTab() {
       await updateIcon('blocked', 'X', '#EA4335');
       // Redirect already-open tab to block page
       const redirectUrl = chrome.runtime.getURL(
-        `blocked/blocked.html?group=${encodeURIComponent(group.name)}&groupId=${encodeURIComponent(group.id)}&reason=${encodeURIComponent(decision.reason)}&allowedMinutes=${decision.allowedMinutes || ''}`
+        `blocked/blocked.html?group=${encodeURIComponent(group.name)}&groupId=${encodeURIComponent(group.id)}&reason=${encodeURIComponent(decision.reason)}&allowedMinutes=${decision.allowedMinutes || ''}&url=${encodeURIComponent(url)}`
       );
       try {
         await chrome.tabs.update(tab.id, { url: redirectUrl });
@@ -182,10 +189,12 @@ async function tick() {
 
     // Redirect the active tab
     try {
+      const tabInfo = await chrome.tabs.get(tabId);
+      const tabUrl = tabInfo?.url || '';
       const group = (await getGroups()).find(g => g.id === groupId);
       const groupName = group ? group.name : 'Unknown';
       const redirectUrl = chrome.runtime.getURL(
-        `blocked/blocked.html?group=${encodeURIComponent(groupName)}&groupId=${encodeURIComponent(groupId)}&reason=budget-exhausted&allowedMinutes=${allowedMinutes}`
+        `blocked/blocked.html?group=${encodeURIComponent(groupName)}&groupId=${encodeURIComponent(groupId)}&reason=budget-exhausted&allowedMinutes=${allowedMinutes}&url=${encodeURIComponent(tabUrl)}`
       );
       await chrome.tabs.update(tabId, { url: redirectUrl });
     } catch (e) {
