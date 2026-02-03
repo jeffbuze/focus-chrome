@@ -11,6 +11,7 @@ import {
 
 const DAY_LABELS = { mon: 'Mon', tue: 'Tue', wed: 'Wed', thu: 'Thu', fri: 'Fri', sat: 'Sat', sun: 'Sun' };
 const ALL_DAYS = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'];
+const DAY_NAMES = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'];
 
 let selectedGroupId = null;
 let groups = [];
@@ -261,13 +262,19 @@ async function renderUsage(group) {
   const container = document.getElementById('usageSection');
   container.innerHTML = '';
   const dateStr = todayDateStr();
+  const todayDay = DAY_NAMES[new Date().getDay()];
 
   if (group.allowedTimeBlocks.length === 0) {
     container.innerHTML = '<p class="usage-empty">No time windows configured.</p>';
     return;
   }
 
+  let hasBlocks = false;
+
   for (const block of group.allowedTimeBlocks) {
+    if (!block.days.includes(todayDay)) continue;
+
+    hasBlocks = true;
     const tracking = await getTrackingEntry(group.id, dateStr, block.id);
     const usedMinutes = Math.round(tracking.usedSeconds / 60 * 10) / 10;
     const pct = Math.min(100, (tracking.usedSeconds / (block.allowedMinutes * 60)) * 100);
@@ -275,12 +282,12 @@ async function renderUsage(group) {
     const wrapper = document.createElement('div');
     wrapper.className = 'usage-bar-wrapper';
 
-    const daysStr = block.days.map(d => DAY_LABELS[d] || d).join(', ');
+    const timeStr = block.allDay ? 'All Day' : `${formatTime12h(block.startTime)} – ${formatTime12h(block.endTime)}`;
     const fillClass = pct >= 100 ? 'danger' : pct >= 75 ? 'warning' : '';
 
     wrapper.innerHTML = `
       <div class="usage-label">
-        <span>${escapeHtml(daysStr)}</span>
+        <span>${escapeHtml(timeStr)}</span>
         <span>${usedMinutes} of ${block.allowedMinutes} min used</span>
       </div>
       <div class="usage-bar">
@@ -289,6 +296,10 @@ async function renderUsage(group) {
     `;
 
     container.appendChild(wrapper);
+  }
+
+  if (!hasBlocks) {
+    container.innerHTML = '<p class="usage-empty">No time windows active today.</p>';
   }
 }
 
