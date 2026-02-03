@@ -7,6 +7,7 @@ import {
 const CONFIRMATION_PHRASE = "i know i should be focusing, but i need to do something important right now instead.";
 
 let currentGroupId = null;
+let currentBlockedUrl = null;
 
 async function init() {
   // Open dashboard link
@@ -36,6 +37,23 @@ async function init() {
   if (url.startsWith('chrome-extension://') && url.includes('blocked/blocked.html')) {
     const blockedParams = new URL(url).searchParams;
     const groupId = blockedParams.get('groupId');
+
+    // Extract the blocked URL from the blocked page params
+    // DNR regexSubstitution appends the URL unencoded, so parse raw query string
+    const rawSearch = new URL(url).search;
+    const urlMarker = '&url=';
+    const markerIdx = rawSearch.indexOf(urlMarker);
+    if (markerIdx !== -1) {
+      const rawValue = rawSearch.substring(markerIdx + urlMarker.length);
+      if (rawValue.startsWith('http://') || rawValue.startsWith('https://')) {
+        currentBlockedUrl = rawValue;
+      }
+    }
+    // Fallback to encoded param
+    if (!currentBlockedUrl) {
+      currentBlockedUrl = blockedParams.get('url') || null;
+    }
+
     const groups = await getGroups();
     const group = groups.find(g => g.id === groupId);
     if (group) {
@@ -72,6 +90,7 @@ async function init() {
   // Use the first (most relevant) matching group
   const group = matching[0];
   currentGroupId = group.id;
+  currentBlockedUrl = url;
 
   const decision = await shouldGroupBlockNow(group);
   showStatus(group, decision);
@@ -83,8 +102,8 @@ async function init() {
     return;
   }
 
-  // Show pause option if site is blocked or being tracked
-  if (decision.block || decision.reason === 'allowed') {
+  // Show pause option only when the site is blocked
+  if (decision.block) {
     setupPauseSection(group.id);
   }
 }
@@ -190,6 +209,14 @@ function setupPauseSection(groupId) {
         groupId,
         pausedUntil,
       });
+
+      // Navigate the tab to the originally blocked URL
+      if (currentBlockedUrl) {
+        const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+        if (tab) {
+          await chrome.tabs.update(tab.id, { url: currentBlockedUrl });
+        }
+      }
 
       window.close();
     });
