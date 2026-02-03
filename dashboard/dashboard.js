@@ -398,8 +398,6 @@ async function handleSaveTimeBlock() {
   document.getElementById('timeBlockForm').style.display = 'none';
   document.getElementById('addTimeBlockBtn').style.display = '';
 
-  groups = await getGroups();
-  renderGroupDetail(groups.find(g => g.id === selectedGroupId));
   showSaved();
 }
 
