@@ -106,7 +106,12 @@ h1 {
 }
 
 .meta {
+  background: var(--bs-surface);
+  border: 1px solid var(--bs-border);
+  border-radius: var(--bs-radius);
+  padding: 14px 16px;
   margin-bottom: 28px;
+  text-align: left;
 }
 
 .blocked-url-row {
@@ -141,8 +146,10 @@ h1 {
 }
 
 .group-name {
-  font-size: 14px;
-  color: var(--bs-text-secondary);
+  font-family: var(--bs-font-mono);
+  font-size: 12px;
+  color: var(--bs-text-tertiary);
+  font-weight: 500;
 }
 
 .group-name strong {
