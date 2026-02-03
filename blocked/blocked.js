@@ -92,11 +92,6 @@ function escapeHtml(str) {
 }
 
 // Button handlers
-document.getElementById('goBackBtn').addEventListener('click', () => {
-  // Going back would re-trigger the block redirect, so open a new tab instead
-  chrome.tabs.update({ url: 'chrome://newtab' });
-});
-
 document.getElementById('dashboardLink').addEventListener('click', (e) => {
   e.preventDefault();
   chrome.tabs.update({ url: chrome.runtime.getURL('dashboard/dashboard.html') });
