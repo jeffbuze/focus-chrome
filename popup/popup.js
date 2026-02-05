@@ -189,6 +189,15 @@ function setupPauseSection(groupId) {
 
   const input = document.getElementById('pauseInput');
   const buttons = document.querySelectorAll('.pause-btn');
+  const pasteWarning = document.getElementById('pasteWarning');
+
+  input.addEventListener('paste', (e) => {
+    e.preventDefault();
+    pasteWarning.style.display = 'block';
+    setTimeout(() => {
+      pasteWarning.style.display = 'none';
+    }, 3000);
+  });
 
   input.addEventListener('input', () => {
     const typed = input.value.trim().toLowerCase().replace(/[""]/g, '"').replace(/['']/g, "'");
