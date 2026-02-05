@@ -16,6 +16,22 @@ const ALARM_PAUSE_PREFIX = 'pause-expiry::';
 
 // ── Event Listeners (registered synchronously at top level) ─────────────
 
+const EVALUATE_DEBOUNCE_MS = 150;
+let evaluateTimer = null;
+let lastRequestedEvalKey = null;
+
+function scheduleEvaluate(tabId, url) {
+  const key = tabId && url ? `${tabId}::${url}` : null;
+  if (key && key === lastRequestedEvalKey) return;
+  lastRequestedEvalKey = key;
+
+  if (evaluateTimer) clearTimeout(evaluateTimer);
+  evaluateTimer = setTimeout(async () => {
+    evaluateTimer = null;
+    await evaluateCurrentTab();
+  }, EVALUATE_DEBOUNCE_MS);
+}
+
 chrome.runtime.onInstalled.addListener(async (details) => {
   if (details.reason === 'install') {
     // First install: open dashboard
@@ -43,12 +59,12 @@ chrome.runtime.onStartup.addListener(async () => {
 
 chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
   if (changeInfo.status === 'complete' || changeInfo.url) {
-    await evaluateCurrentTab();
+    scheduleEvaluate(tabId, changeInfo.url || tab?.url || null);
   }
 });
 
 chrome.tabs.onActivated.addListener(async () => {
-  await evaluateCurrentTab();
+  scheduleEvaluate(null, null);
 });
 
 chrome.windows.onFocusChanged.addListener(async (windowId) => {
@@ -57,7 +73,7 @@ chrome.windows.onFocusChanged.addListener(async (windowId) => {
     await stopTracking();
     await updateIcon('default');
   } else {
-    await evaluateCurrentTab();
+    scheduleEvaluate(null, null);
   }
 });
 

@@ -172,8 +172,8 @@ async function tick() {
 
   const remaining = trackingState.allowedSeconds - trackingState.usedSeconds;
 
-  // Persist every 10 ticks
-  if (tickCounter % 10 === 0) {
+  // Persist every 30 ticks (alarm also persists periodically)
+  if (tickCounter % 30 === 0) {
     await persistTracking();
   }
 
