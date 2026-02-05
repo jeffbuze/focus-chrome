@@ -1,6 +1,6 @@
 // dashboard/dashboard.js — Dashboard UI logic
 import {
-  getGroups, onStorageChanged, todayDateStr, getTrackingEntry,
+  getGroups, onStorageChanged, todayDateStr, getAllTrackingForDate,
 } from '../shared/storage.js';
 import {
   createGroup, deleteGroup, updateGroup,
@@ -269,13 +269,18 @@ async function renderUsage(group) {
     return;
   }
 
-  let hasBlocks = false;
+  const todaysBlocks = group.allowedTimeBlocks.filter(block => block.days.includes(todayDay));
+  if (todaysBlocks.length === 0) {
+    container.innerHTML = '<p class="usage-empty">No time windows active today.</p>';
+    return;
+  }
 
-  for (const block of group.allowedTimeBlocks) {
-    if (!block.days.includes(todayDay)) continue;
+  const trackingMap = await getAllTrackingForDate(dateStr);
 
-    hasBlocks = true;
-    const tracking = await getTrackingEntry(group.id, dateStr, block.id);
+  for (const block of todaysBlocks) {
+
+    const trackingKey = `tracking::${group.id}::${dateStr}::${block.id}`;
+    const tracking = trackingMap[trackingKey] || { usedSeconds: 0 };
     const usedMinutes = Math.round(tracking.usedSeconds / 60 * 10) / 10;
     const pct = Math.min(100, (tracking.usedSeconds / (block.allowedMinutes * 60)) * 100);
 
@@ -296,10 +301,6 @@ async function renderUsage(group) {
     `;
 
     container.appendChild(wrapper);
-  }
-
-  if (!hasBlocks) {
-    container.innerHTML = '<p class="usage-empty">No time windows active today.</p>';
   }
 }
 
