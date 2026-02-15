@@ -36,8 +36,49 @@ export async function evaluateCurrentTab() {
   const tab = tabs[0];
   const url = tab.url;
 
-  // Detect if we're on our own blocked page
+  // Detect if we're on our own blocked page — check if the original URL is still blocked
   if (url.startsWith('chrome-extension://') && url.includes('blocked/blocked.html')) {
+    let originalUrl = null;
+    try {
+      const rawSearch = new URL(url).search;
+      const urlMarker = '&url=';
+      const markerIdx = rawSearch.indexOf(urlMarker);
+      if (markerIdx !== -1) {
+        const rawValue = rawSearch.substring(markerIdx + urlMarker.length);
+        if (rawValue.startsWith('http://') || rawValue.startsWith('https://')) {
+          originalUrl = rawValue;
+        }
+      }
+      if (!originalUrl) {
+        originalUrl = new URL(url).searchParams.get('url') || null;
+      }
+    } catch {
+      // URL parsing failed
+    }
+
+    if (originalUrl) {
+      const groups = await getGroups();
+      const matchingGroups = findMatchingGroups(originalUrl, groups);
+
+      let stillBlocked = false;
+      for (const group of matchingGroups) {
+        const decision = await shouldGroupBlockNow(group);
+        if (decision.block) {
+          stillBlocked = true;
+          break;
+        }
+      }
+
+      if (!stillBlocked && matchingGroups.length > 0) {
+        try {
+          await chrome.tabs.update(tab.id, { url: originalUrl });
+        } catch (e) {
+          // Tab may have closed
+        }
+        return;
+      }
+    }
+
     await stopTracking();
     await updateIcon('blocked', 'X', '#EA4335');
     return;

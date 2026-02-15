@@ -70,6 +70,50 @@ export async function getActiveBlockForGroup(group) {
   return null;
 }
 
+export function getNextTimeWindowBoundary(groups) {
+  const now = new Date();
+  const today = getCurrentDayStr();
+  const nowMinutes = getCurrentTimeMinutes();
+
+  let soonestMs = null;
+
+  for (const group of groups) {
+    for (const block of group.allowedTimeBlocks) {
+      if (!block.days.includes(today)) continue;
+
+      const start = timeStrToMinutes(block.startTime);
+      const end = timeStrToMinutes(block.endTime);
+
+      // Candidate boundaries that are still in the future today
+      const boundaries = [];
+
+      if (start > nowMinutes) {
+        boundaries.push(start);
+      }
+
+      // end+1: isInsideTimeBlock uses <= for end, so at end+1 the window closes
+      const endBoundary = end + 1;
+      if (endBoundary > nowMinutes && endBoundary <= 24 * 60) {
+        boundaries.push(endBoundary);
+      }
+
+      for (const boundaryMinutes of boundaries) {
+        const boundaryDate = new Date(now);
+        boundaryDate.setHours(Math.floor(boundaryMinutes / 60), boundaryMinutes % 60, 0, 0);
+        const boundaryMs = boundaryDate.getTime();
+
+        if (boundaryMs > now.getTime()) {
+          if (soonestMs === null || boundaryMs < soonestMs) {
+            soonestMs = boundaryMs;
+          }
+        }
+      }
+    }
+  }
+
+  return soonestMs;
+}
+
 export async function shouldGroupBlockNow(group) {
   // Check pause
   const pause = await getPause(group.id);
