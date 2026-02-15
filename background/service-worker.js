@@ -3,7 +3,7 @@ import {
   getGroups, saveGroups, getSettings, saveSettings, onStorageChanged,
   setPause, clearPause, getAllActivePauses, todayDateStr,
 } from '../shared/storage.js';
-import { rebuildAllRules, findMatchingGroups, shouldGroupBlockNow } from './rule-engine.js';
+import { rebuildAllRules, findMatchingGroups, shouldGroupBlockNow, getNextTimeWindowBoundary } from './rule-engine.js';
 import {
   evaluateCurrentTab, stopTracking, onPersistAlarm, resumeTracking,
   getTrackingState,
@@ -13,6 +13,7 @@ import { updateIcon } from './icon-renderer.js';
 const ALARM_PERSIST = 'persist-tick';
 const ALARM_MIDNIGHT = 'midnight-rollover';
 const ALARM_PAUSE_PREFIX = 'pause-expiry::';
+const ALARM_TIME_BOUNDARY = 'time-window-boundary';
 
 // ── Event Listeners (registered synchronously at top level) ─────────────
 
@@ -82,6 +83,8 @@ chrome.alarms.onAlarm.addListener(async (alarm) => {
     await onPersistAlarm();
   } else if (alarm.name === ALARM_MIDNIGHT) {
     await handleMidnightRollover();
+  } else if (alarm.name === ALARM_TIME_BOUNDARY) {
+    await handleTimeWindowBoundary();
   } else if (alarm.name.startsWith(ALARM_PAUSE_PREFIX)) {
     const groupId = alarm.name.slice(ALARM_PAUSE_PREFIX.length);
     await handlePauseExpiry(groupId);
@@ -122,6 +125,7 @@ onStorageChanged(async (changes) => {
   if (changes.groups) {
     await rebuildAllRules();
     await evaluateCurrentTab();
+    await scheduleNextTimeWindowAlarm();
   }
 });
 
@@ -155,6 +159,9 @@ async function setupAlarms() {
     const alarmName = `${ALARM_PAUSE_PREFIX}${groupId}`;
     await chrome.alarms.create(alarmName, { when: pause.pausedUntil });
   }
+
+  // Schedule alarm for next time-window boundary
+  await scheduleNextTimeWindowAlarm();
 }
 
 async function scheduleMidnightAlarm() {
@@ -169,6 +176,25 @@ async function scheduleMidnightAlarm() {
   });
 }
 
+// ── Time Window Boundary ─────────────────────────────────────────────
+
+async function scheduleNextTimeWindowAlarm() {
+  await chrome.alarms.clear(ALARM_TIME_BOUNDARY);
+
+  const groups = await getGroups();
+  const nextBoundaryMs = getNextTimeWindowBoundary(groups);
+
+  if (nextBoundaryMs !== null) {
+    await chrome.alarms.create(ALARM_TIME_BOUNDARY, { when: nextBoundaryMs });
+  }
+}
+
+async function handleTimeWindowBoundary() {
+  await rebuildAllRules();
+  await evaluateCurrentTab();
+  await scheduleNextTimeWindowAlarm();
+}
+
 // ── Pause Handling ──────────────────────────────────────────────────────
 
 async function handlePauseActivated(groupId, pausedUntil) {
@@ -181,12 +207,14 @@ async function handlePauseActivated(groupId, pausedUntil) {
   // Rebuild rules (removes blocking for paused group)
   await rebuildAllRules();
   await evaluateCurrentTab();
+  await scheduleNextTimeWindowAlarm();
 }
 
 async function handlePauseExpiry(groupId) {
   await clearPause(groupId);
   await rebuildAllRules();
   await evaluateCurrentTab();
+  await scheduleNextTimeWindowAlarm();
 }
 
 // ── Midnight Rollover ───────────────────────────────────────────────────
@@ -199,6 +227,7 @@ async function handleMidnightRollover() {
 
   // Reschedule next midnight alarm
   await scheduleMidnightAlarm();
+  await scheduleNextTimeWindowAlarm();
 }
 
 // ── Tab Status Query ────────────────────────────────────────────────────
