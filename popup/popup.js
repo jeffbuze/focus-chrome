@@ -67,7 +67,7 @@ async function init() {
         return;
       }
       // Show pause option
-      setupPauseSection(group.id);
+      await setupPauseSection(group.id);
       return;
     }
     showNoMatch();
@@ -104,7 +104,7 @@ async function init() {
 
   // Show pause option only when the site is blocked
   if (decision.block) {
-    setupPauseSection(group.id);
+    await setupPauseSection(group.id);
   }
 }
 
@@ -183,13 +183,32 @@ function showActivePause(pausedUntil) {
   });
 }
 
-function setupPauseSection(groupId) {
+async function setupPauseSection(groupId) {
   const section = document.getElementById('pauseSection');
   section.style.display = 'block';
 
   const input = document.getElementById('pauseInput');
   const buttons = document.querySelectorAll('.pause-btn');
   const pasteWarning = document.getElementById('pasteWarning');
+  const pauseLimitInfo = document.getElementById('pauseLimitInfo');
+  const pauseLimitStatus = await chrome.runtime.sendMessage({
+    type: 'get-pause-limit-status',
+    groupId,
+  });
+  let remainingPauses = null;
+
+  if (pauseLimitStatus && pauseLimitStatus.ok) {
+    remainingPauses = pauseLimitStatus.remaining;
+    pauseLimitInfo.classList.remove('warning');
+    if (remainingPauses <= 0) {
+      pauseLimitInfo.classList.add('warning');
+      pauseLimitInfo.textContent = `Daily pause limit reached (${pauseLimitStatus.used}/${pauseLimitStatus.limit}).`;
+    } else {
+      pauseLimitInfo.textContent = `Pauses today: ${pauseLimitStatus.used}/${pauseLimitStatus.limit}`;
+    }
+  } else {
+    pauseLimitInfo.textContent = '';
+  }
 
   input.addEventListener('paste', (e) => {
     e.preventDefault();
@@ -202,8 +221,9 @@ function setupPauseSection(groupId) {
   input.addEventListener('input', () => {
     const typed = input.value.trim().toLowerCase().replace(/[""]/g, '"').replace(/['']/g, "'");
     const matches = typed === CONFIRMATION_PHRASE;
+    const canPause = remainingPauses === null ? matches : (matches && remainingPauses > 0);
     buttons.forEach(btn => {
-      btn.disabled = !matches;
+      btn.disabled = !canPause;
     });
   });
 
@@ -213,11 +233,23 @@ function setupPauseSection(groupId) {
       const pausedUntil = Date.now() + minutes * 60 * 1000;
 
       // Send message to service worker to activate pause
-      await chrome.runtime.sendMessage({
+      const activationResult = await chrome.runtime.sendMessage({
         type: 'pause-activated',
         groupId,
         pausedUntil,
       });
+      if (!activationResult || !activationResult.ok) {
+        if (activationResult?.reason === 'pause-limit-reached') {
+          remainingPauses = 0;
+          pauseLimitInfo.classList.add('warning');
+          pauseLimitInfo.textContent = `Daily pause limit reached (${activationResult.used}/${activationResult.limit}).`;
+          buttons.forEach(button => { button.disabled = true; });
+        }
+        return;
+      }
+      remainingPauses = activationResult.remaining;
+      pauseLimitInfo.classList.remove('warning');
+      pauseLimitInfo.textContent = `Pauses today: ${activationResult.used}/${activationResult.limit}`;
 
       // Navigate the tab to the originally blocked URL
       if (currentBlockedUrl) {

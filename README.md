@@ -10,6 +10,7 @@ A Chrome extension that blocks distracting websites and helps you manage your br
 - **Live time tracking** — See remaining time in the extension badge as it counts down
 - **Daily usage stats** — View per-window usage bars on the dashboard
 - **Mindful pause** — Temporarily bypass blocking by typing a mindfulness phrase, with 5/10/25 minute options
+- **Daily pause caps** — Set a per-group limit for how many manual pauses are allowed each day
 - **Blocked page** — Displays an inspirational quote and the reason access was denied
 - **All data stays local** — No accounts, no telemetry, no external network calls
 
@@ -58,6 +59,10 @@ If you need temporary access to a blocked site:
 3. Choose a pause duration (5, 10, or 25 minutes)
 
 You'll be redirected to the site. When the pause expires, blocking resumes automatically.
+
+### Limiting pauses per group
+
+In each group, use **Pause Limits** to set how many manual pauses are allowed per day. Set it to `0` to disable manual pauses for that group.
 
 ## Project Structure
 

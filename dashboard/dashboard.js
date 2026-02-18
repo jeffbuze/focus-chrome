@@ -1,6 +1,7 @@
 // dashboard/dashboard.js — Dashboard UI logic
 import {
   getGroups, onStorageChanged, todayDateStr, getAllTrackingForDate,
+  DEFAULT_DAILY_PAUSE_LIMIT, sanitizeDailyPauseLimit,
 } from '../shared/storage.js';
 import {
   createGroup, deleteGroup, updateGroup,
@@ -68,6 +69,14 @@ function setupEventListeners() {
         showSaved();
       }
     }, 300);
+  });
+
+  document.getElementById('pauseLimitInput').addEventListener('change', async (e) => {
+    if (!selectedGroupId) return;
+    const nextValue = sanitizeDailyPauseLimit(e.target.value);
+    e.target.value = nextValue;
+    await updateGroup(selectedGroupId, { pauseLimitPerDay: nextValue });
+    showSaved();
   });
 
   // Delete group
@@ -178,6 +187,9 @@ function showEmptyState() {
 async function renderGroupDetail(group) {
   // Header
   document.getElementById('groupNameInput').value = group.name;
+  document.getElementById('pauseLimitInput').value = sanitizeDailyPauseLimit(
+    group.pauseLimitPerDay ?? DEFAULT_DAILY_PAUSE_LIMIT,
+  );
 
   // Sites
   renderSiteChips(group);
