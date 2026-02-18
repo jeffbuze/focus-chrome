@@ -8,6 +8,14 @@ export function todayDateStr() {
   return `${yyyy}-${mm}-${dd}`;
 }
 
+export const DEFAULT_DAILY_PAUSE_LIMIT = 3;
+
+export function sanitizeDailyPauseLimit(value) {
+  const parsed = Number(value);
+  if (!Number.isFinite(parsed)) return DEFAULT_DAILY_PAUSE_LIMIT;
+  return Math.max(0, Math.floor(parsed));
+}
+
 // ── Groups ──────────────────────────────────────────────────────────────
 
 export async function getGroups() {
@@ -91,6 +99,28 @@ export async function getAllActivePauses() {
     }
   }
   return pauses;
+}
+
+// ── Pause Usage (Daily) ─────────────────────────────────────────────────
+// Keys: pause-count::{groupId}::{YYYY-MM-DD}
+// Value: { count: number }
+
+function pauseCountKey(groupId, dateStr) {
+  return `pause-count::${groupId}::${dateStr}`;
+}
+
+export async function getPauseCount(groupId, dateStr) {
+  const key = pauseCountKey(groupId, dateStr);
+  const result = await chrome.storage.local.get({ [key]: { count: 0 } });
+  return result[key];
+}
+
+export async function incrementPauseCount(groupId, dateStr) {
+  const key = pauseCountKey(groupId, dateStr);
+  const current = await getPauseCount(groupId, dateStr);
+  const nextCount = (current.count || 0) + 1;
+  await chrome.storage.local.set({ [key]: { count: nextCount } });
+  return { count: nextCount };
 }
 
 // ── Rule ID Management ──────────────────────────────────────────────────

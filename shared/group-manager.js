@@ -1,5 +1,8 @@
 // shared/group-manager.js — Higher-level CRUD for site-blocking groups
-import { getGroups, saveGroups, getGroupById } from './storage.js';
+import {
+  getGroups, saveGroups, getGroupById,
+  DEFAULT_DAILY_PAUSE_LIMIT, sanitizeDailyPauseLimit,
+} from './storage.js';
 
 // ── Pattern Helpers ─────────────────────────────────────────────────────
 
@@ -46,6 +49,7 @@ export async function createGroup(name) {
     id: crypto.randomUUID(),
     name: name || 'New Group',
     enabled: true,
+    pauseLimitPerDay: DEFAULT_DAILY_PAUSE_LIMIT,
     sites: [],
     allowedTimeBlocks: [],
   };
@@ -64,6 +68,9 @@ export async function updateGroup(groupId, updates) {
   const groups = await getGroups();
   const idx = groups.findIndex(g => g.id === groupId);
   if (idx === -1) return null;
+  if (Object.prototype.hasOwnProperty.call(updates, 'pauseLimitPerDay')) {
+    updates.pauseLimitPerDay = sanitizeDailyPauseLimit(updates.pauseLimitPerDay);
+  }
   Object.assign(groups[idx], updates);
   await saveGroups(groups);
   return groups[idx];

@@ -2,6 +2,8 @@
 import {
   getGroups, saveGroups, getSettings, saveSettings, onStorageChanged,
   setPause, clearPause, getAllActivePauses, todayDateStr,
+  DEFAULT_DAILY_PAUSE_LIMIT, sanitizeDailyPauseLimit,
+  getPauseCount, incrementPauseCount,
 } from '../shared/storage.js';
 import { rebuildAllRules, findMatchingGroups, shouldGroupBlockNow, getNextTimeWindowBoundary } from './rule-engine.js';
 import {
@@ -94,9 +96,16 @@ chrome.alarms.onAlarm.addListener(async (alarm) => {
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (message.type === 'pause-activated') {
     handlePauseActivated(message.groupId, message.pausedUntil)
-      .then(() => sendResponse({ ok: true }))
+      .then((result) => sendResponse(result))
       .catch((e) => sendResponse({ ok: false, error: e.message }));
     return true; // async response
+  }
+
+  if (message.type === 'get-pause-limit-status') {
+    getPauseLimitStatus(message.groupId)
+      .then((status) => sendResponse(status))
+      .catch((e) => sendResponse({ ok: false, error: e.message }));
+    return true;
   }
 
   if (message.type === 'pause-ended') {
@@ -198,7 +207,16 @@ async function handleTimeWindowBoundary() {
 // ── Pause Handling ──────────────────────────────────────────────────────
 
 async function handlePauseActivated(groupId, pausedUntil) {
+  const pauseStatus = await getPauseLimitStatus(groupId);
+  if (!pauseStatus.ok) return pauseStatus;
+  if (pauseStatus.remaining <= 0) {
+    return { ...pauseStatus, ok: false, reason: 'pause-limit-reached' };
+  }
+
   await setPause(groupId, pausedUntil);
+  const dateStr = todayDateStr();
+  const { count } = await incrementPauseCount(groupId, dateStr);
+  const remaining = Math.max(0, pauseStatus.limit - count);
 
   // Set alarm for pause expiry
   const alarmName = `${ALARM_PAUSE_PREFIX}${groupId}`;
@@ -208,6 +226,14 @@ async function handlePauseActivated(groupId, pausedUntil) {
   await rebuildAllRules();
   await evaluateCurrentTab();
   await scheduleNextTimeWindowAlarm();
+
+  return {
+    ok: true,
+    reason: 'pause-activated',
+    limit: pauseStatus.limit,
+    used: count,
+    remaining,
+  };
 }
 
 async function handlePauseExpiry(groupId) {
@@ -247,6 +273,29 @@ async function getTabStatus(url) {
     groupId: group.id,
     groupName: group.name,
     ...decision,
+  };
+}
+
+async function getPauseLimitStatus(groupId) {
+  const groups = await getGroups();
+  const group = groups.find(g => g.id === groupId);
+  if (!group) {
+    return { ok: false, reason: 'group-not-found', error: 'Group not found.' };
+  }
+
+  const limit = sanitizeDailyPauseLimit(
+    group.pauseLimitPerDay ?? DEFAULT_DAILY_PAUSE_LIMIT,
+  );
+  const dateStr = todayDateStr();
+  const entry = await getPauseCount(groupId, dateStr);
+  const used = entry.count || 0;
+
+  return {
+    ok: true,
+    reason: 'pause-limit-status',
+    limit,
+    used,
+    remaining: Math.max(0, limit - used),
   };
 }
 

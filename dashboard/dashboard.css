@@ -511,6 +511,12 @@ input[type="number"]:focus {
     margin-top: 4px;
 }
 
+.field-help {
+    margin-top: 6px;
+    font-size: 12px;
+    color: var(--bs-text-secondary);
+}
+
 /* Usage bars */
 .usage-bar-wrapper {
     margin-bottom: 12px;
