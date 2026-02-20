@@ -93,6 +93,28 @@ export async function getAllActivePauses() {
   return pauses;
 }
 
+// ── Pause Count ────────────────────────────────────────────────────────
+// Keys: pauseCount::{groupId}::{YYYY-MM-DD}
+// Value: { count: number }
+
+function pauseCountKey(groupId, dateStr) {
+  return `pauseCount::${groupId}::${dateStr}`;
+}
+
+export async function getPauseCount(groupId, dateStr) {
+  const key = pauseCountKey(groupId, dateStr);
+  const result = await chrome.storage.local.get({ [key]: { count: 0 } });
+  return result[key];
+}
+
+export async function incrementPauseCount(groupId, dateStr) {
+  const key = pauseCountKey(groupId, dateStr);
+  const current = await chrome.storage.local.get({ [key]: { count: 0 } });
+  const newCount = current[key].count + 1;
+  await chrome.storage.local.set({ [key]: { count: newCount } });
+  return newCount;
+}
+
 // ── Rule ID Management ──────────────────────────────────────────────────
 
 export async function getRuleIdMap() {
@@ -118,6 +140,7 @@ export async function saveNextRuleId(id) {
 const DEFAULT_SETTINGS = {
   showBadge: true,
   firstRun: true,
+  maxDailyPauses: 3,
 };
 
 export async function getSettings() {

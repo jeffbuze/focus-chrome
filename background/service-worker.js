@@ -2,6 +2,7 @@
 import {
   getGroups, saveGroups, getSettings, saveSettings, onStorageChanged,
   setPause, clearPause, getAllActivePauses, todayDateStr,
+  getPauseCount, incrementPauseCount,
 } from '../shared/storage.js';
 import { rebuildAllRules, findMatchingGroups, shouldGroupBlockNow, getNextTimeWindowBoundary } from './rule-engine.js';
 import {
@@ -112,6 +113,25 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     return false;
   }
 
+  if (message.type === 'get-pause-info') {
+    (async () => {
+      try {
+        const settings = await getSettings();
+        const dateStr = todayDateStr();
+        const { count } = await getPauseCount(message.groupId, dateStr);
+        sendResponse({
+          pauseCount: count,
+          maxDailyPauses: settings.maxDailyPauses,
+          remaining: Math.max(0, settings.maxDailyPauses - count),
+        });
+      } catch (error) {
+        console.error('Error getting pause info:', error);
+        sendResponse({ pauseCount: 0, maxDailyPauses: 3, remaining: 3 });
+      }
+    })();
+    return true;
+  }
+
   if (message.type === 'get-tab-status') {
     getTabStatus(message.url)
       .then((status) => sendResponse(status))
@@ -198,6 +218,16 @@ async function handleTimeWindowBoundary() {
 // ── Pause Handling ──────────────────────────────────────────────────────
 
 async function handlePauseActivated(groupId, pausedUntil) {
+  // Enforce daily pause limit
+  const settings = await getSettings();
+  const dateStr = todayDateStr();
+  const { count } = await getPauseCount(groupId, dateStr);
+
+  if (count >= settings.maxDailyPauses) {
+    throw new Error('Daily pause limit reached');
+  }
+
+  await incrementPauseCount(groupId, dateStr);
   await setPause(groupId, pausedUntil);
 
   // Set alarm for pause expiry

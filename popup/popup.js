@@ -183,9 +183,35 @@ function showActivePause(pausedUntil) {
   });
 }
 
-function setupPauseSection(groupId) {
+async function setupPauseSection(groupId) {
   const section = document.getElementById('pauseSection');
   section.style.display = 'block';
+
+  // Fetch pause limit info from service worker
+  let pauseInfo;
+  try {
+    pauseInfo = await chrome.runtime.sendMessage({
+      type: 'get-pause-info',
+      groupId,
+    });
+  } catch {
+    pauseInfo = { pauseCount: 0, maxDailyPauses: 3, remaining: 3 };
+  }
+
+  const remainingEl = document.getElementById('pauseRemainingInfo');
+  const limitReachedEl = document.getElementById('pauseLimitReached');
+  const formContentEl = document.getElementById('pauseFormContent');
+
+  remainingEl.textContent = `${pauseInfo.remaining} of ${pauseInfo.maxDailyPauses} pause${pauseInfo.maxDailyPauses !== 1 ? 's' : ''} remaining today`;
+
+  if (pauseInfo.remaining <= 0) {
+    limitReachedEl.style.display = 'block';
+    formContentEl.style.display = 'none';
+    return;
+  }
+
+  limitReachedEl.style.display = 'none';
+  formContentEl.style.display = 'block';
 
   const input = document.getElementById('pauseInput');
   const buttons = document.querySelectorAll('.pause-btn');
@@ -212,12 +238,19 @@ function setupPauseSection(groupId) {
       const minutes = parseInt(btn.dataset.minutes);
       const pausedUntil = Date.now() + minutes * 60 * 1000;
 
-      // Send message to service worker to activate pause
-      await chrome.runtime.sendMessage({
+      const response = await chrome.runtime.sendMessage({
         type: 'pause-activated',
         groupId,
         pausedUntil,
       });
+
+      // Handle limit-reached error from service worker
+      if (response && !response.ok) {
+        limitReachedEl.style.display = 'block';
+        formContentEl.style.display = 'none';
+        remainingEl.textContent = `0 of ${pauseInfo.maxDailyPauses} pauses remaining today`;
+        return;
+      }
 
       // Navigate the tab to the originally blocked URL
       if (currentBlockedUrl) {
