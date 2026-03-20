@@ -7,8 +7,8 @@ import {
 } from '../shared/storage.js';
 import { rebuildAllRules, findMatchingGroups, shouldGroupBlockNow, getNextTimeWindowBoundary } from './rule-engine.js';
 import {
-  evaluateCurrentTab, stopTracking, onPersistAlarm, resumeTracking,
-  getTrackingState,
+  evaluateCurrentTab, stopTracking, onPersistAlarm, getTrackingState,
+  IDLE_DETECTION_SECONDS, setIdleState,
 } from './time-tracker.js';
 import { updateIcon } from './icon-renderer.js';
 
@@ -70,6 +70,14 @@ chrome.tabs.onActivated.addListener(async () => {
   scheduleEvaluate(null, null);
 });
 
+chrome.tabs.onRemoved.addListener(async (tabId) => {
+  const trackingState = getTrackingState();
+  if (trackingState && trackingState.tabId === tabId) {
+    await stopTracking();
+  }
+  scheduleEvaluate(null, null);
+});
+
 chrome.windows.onFocusChanged.addListener(async (windowId) => {
   if (windowId === chrome.windows.WINDOW_ID_NONE) {
     // All windows lost focus — stop tracking
@@ -78,6 +86,18 @@ chrome.windows.onFocusChanged.addListener(async (windowId) => {
   } else {
     scheduleEvaluate(null, null);
   }
+});
+
+chrome.idle.onStateChanged.addListener(async (newState) => {
+  setIdleState(newState);
+
+  if (newState === 'active') {
+    scheduleEvaluate(null, null);
+    return;
+  }
+
+  await stopTracking();
+  await updateIcon('default');
 });
 
 chrome.alarms.onAlarm.addListener(async (alarm) => {
@@ -148,6 +168,9 @@ async function initialize() {
     // Set up persistent alarms
     await setupAlarms();
 
+    // Seed machine activity state before evaluating the current tab.
+    await syncIdleState();
+
     // Evaluate current tab
     await evaluateCurrentTab();
   } catch (e) {
@@ -171,6 +194,12 @@ async function setupAlarms() {
 
   // Schedule alarm for next time-window boundary
   await scheduleNextTimeWindowAlarm();
+}
+
+async function syncIdleState() {
+  await chrome.idle.setDetectionInterval(IDLE_DETECTION_SECONDS);
+  const idleState = await chrome.idle.queryState(IDLE_DETECTION_SECONDS);
+  setIdleState(idleState);
 }
 
 async function scheduleMidnightAlarm() {
