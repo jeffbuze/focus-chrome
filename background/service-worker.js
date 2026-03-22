@@ -101,15 +101,19 @@ chrome.idle.onStateChanged.addListener(async (newState) => {
 });
 
 chrome.alarms.onAlarm.addListener(async (alarm) => {
-  if (alarm.name === ALARM_PERSIST) {
-    await onPersistAlarm();
-  } else if (alarm.name === ALARM_MIDNIGHT) {
-    await handleMidnightRollover();
-  } else if (alarm.name === ALARM_TIME_BOUNDARY) {
-    await handleTimeWindowBoundary();
-  } else if (alarm.name.startsWith(ALARM_PAUSE_PREFIX)) {
-    const groupId = alarm.name.slice(ALARM_PAUSE_PREFIX.length);
-    await handlePauseExpiry(groupId);
+  try {
+    if (alarm.name === ALARM_PERSIST) {
+      await onPersistAlarm();
+    } else if (alarm.name === ALARM_MIDNIGHT) {
+      await handleMidnightRollover();
+    } else if (alarm.name === ALARM_TIME_BOUNDARY) {
+      await handleTimeWindowBoundary();
+    } else if (alarm.name.startsWith(ALARM_PAUSE_PREFIX)) {
+      const groupId = alarm.name.slice(ALARM_PAUSE_PREFIX.length);
+      await handlePauseExpiry(groupId);
+    }
+  } catch (e) {
+    console.error('BlankSlate: Unhandled error in alarm handler:', alarm.name, e);
   }
 });
 
@@ -228,8 +232,16 @@ async function scheduleNextTimeWindowAlarm() {
 }
 
 async function handleTimeWindowBoundary() {
-  await rebuildAllRules();
-  await evaluateCurrentTab();
+  try {
+    await rebuildAllRules();
+  } catch (e) {
+    console.error('BlankSlate: rebuildAllRules failed in time-window boundary:', e);
+  }
+  try {
+    await evaluateCurrentTab();
+  } catch (e) {
+    console.error('BlankSlate: evaluateCurrentTab failed in time-window boundary:', e);
+  }
   await scheduleNextTimeWindowAlarm();
 }
 
@@ -266,9 +278,21 @@ async function handlePauseActivated(groupId, pausedUntil) {
 }
 
 async function handlePauseExpiry(groupId) {
-  await clearPause(groupId);
-  await rebuildAllRules();
-  await evaluateCurrentTab();
+  try {
+    await clearPause(groupId);
+  } catch (e) {
+    console.error('BlankSlate: clearPause failed in pause-expiry:', e);
+  }
+  try {
+    await rebuildAllRules();
+  } catch (e) {
+    console.error('BlankSlate: rebuildAllRules failed in pause-expiry:', e);
+  }
+  try {
+    await evaluateCurrentTab();
+  } catch (e) {
+    console.error('BlankSlate: evaluateCurrentTab failed in pause-expiry:', e);
+  }
   await scheduleNextTimeWindowAlarm();
 }
 
@@ -276,9 +300,21 @@ async function handlePauseExpiry(groupId) {
 
 async function handleMidnightRollover() {
   // Stop any active tracking (new day = fresh budgets)
-  await stopTracking();
-  await rebuildAllRules();
-  await evaluateCurrentTab();
+  try {
+    await stopTracking();
+  } catch (e) {
+    console.error('BlankSlate: stopTracking failed in midnight rollover:', e);
+  }
+  try {
+    await rebuildAllRules();
+  } catch (e) {
+    console.error('BlankSlate: rebuildAllRules failed in midnight rollover:', e);
+  }
+  try {
+    await evaluateCurrentTab();
+  } catch (e) {
+    console.error('BlankSlate: evaluateCurrentTab failed in midnight rollover:', e);
+  }
 
   // Reschedule next midnight alarm
   await scheduleMidnightAlarm();

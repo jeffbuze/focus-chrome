@@ -217,6 +217,11 @@ export async function evaluateCurrentTab() {
   if (resolvedState.status === 'restore-original') {
     await stopTracking();
     try {
+      await rebuildAllRules();
+    } catch (e) {
+      console.error('BlankSlate: Failed to rebuild rules on unblock:', e);
+    }
+    try {
       await chrome.tabs.update(resolvedState.tabId, { url: resolvedState.originalUrl });
     } catch {
       // Tab may have closed
