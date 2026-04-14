@@ -179,6 +179,14 @@ function showActivePause(pausedUntil) {
       groupId: currentGroupId,
     });
     clearInterval(interval);
+
+    if (currentBlockedUrl) {
+      const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+      if (tab) {
+        await chrome.tabs.update(tab.id, { url: currentBlockedUrl });
+      }
+    }
+
     window.close();
   });
 }
