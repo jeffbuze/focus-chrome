@@ -1,4 +1,4 @@
-# BlankSlate Focus
+# Timed Focus
 
 A Chrome extension that blocks distracting websites and helps you manage your browsing time with configurable time budgets.
 

@@ -219,7 +219,7 @@ export async function evaluateCurrentTab() {
     try {
       await rebuildAllRules();
     } catch (e) {
-      console.error('BlankSlate: Failed to rebuild rules on unblock:', e);
+      console.error('TimedFocus: Failed to rebuild rules on unblock:', e);
     }
     try {
       await chrome.tabs.update(resolvedState.tabId, { url: resolvedState.originalUrl });

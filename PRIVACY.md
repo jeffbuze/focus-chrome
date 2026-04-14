@@ -1,8 +1,8 @@
-# Privacy Policy — BlankSlate Focus
+# Privacy Policy — Timed Focus
 
 _Last updated: April 14, 2026_
 
-BlankSlate Focus is a Chrome extension that helps you block distracting websites and manage browsing time against schedules you configure. This policy explains what the extension stores, where it stores it, and what it does not do.
+Timed Focus is a Chrome extension that helps you block distracting websites and manage browsing time against schedules you configure. This policy explains what the extension stores, where it stores it, and what it does not do.
 
 ## Summary
 

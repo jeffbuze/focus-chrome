@@ -113,7 +113,7 @@ chrome.alarms.onAlarm.addListener(async (alarm) => {
       await handlePauseExpiry(groupId);
     }
   } catch (e) {
-    console.error('BlankSlate: Unhandled error in alarm handler:', alarm.name, e);
+    console.error('TimedFocus: Unhandled error in alarm handler:', alarm.name, e);
   }
 });
 
@@ -178,7 +178,7 @@ async function initialize() {
     // Evaluate current tab
     await evaluateCurrentTab();
   } catch (e) {
-    console.error('BlankSlate Focus initialization error:', e);
+    console.error('Timed Focus initialization error:', e);
   }
 }
 
@@ -235,12 +235,12 @@ async function handleTimeWindowBoundary() {
   try {
     await rebuildAllRules();
   } catch (e) {
-    console.error('BlankSlate: rebuildAllRules failed in time-window boundary:', e);
+    console.error('TimedFocus: rebuildAllRules failed in time-window boundary:', e);
   }
   try {
     await evaluateCurrentTab();
   } catch (e) {
-    console.error('BlankSlate: evaluateCurrentTab failed in time-window boundary:', e);
+    console.error('TimedFocus: evaluateCurrentTab failed in time-window boundary:', e);
   }
   await scheduleNextTimeWindowAlarm();
 }
@@ -281,17 +281,17 @@ async function handlePauseExpiry(groupId) {
   try {
     await clearPause(groupId);
   } catch (e) {
-    console.error('BlankSlate: clearPause failed in pause-expiry:', e);
+    console.error('TimedFocus: clearPause failed in pause-expiry:', e);
   }
   try {
     await rebuildAllRules();
   } catch (e) {
-    console.error('BlankSlate: rebuildAllRules failed in pause-expiry:', e);
+    console.error('TimedFocus: rebuildAllRules failed in pause-expiry:', e);
   }
   try {
     await evaluateCurrentTab();
   } catch (e) {
-    console.error('BlankSlate: evaluateCurrentTab failed in pause-expiry:', e);
+    console.error('TimedFocus: evaluateCurrentTab failed in pause-expiry:', e);
   }
   await scheduleNextTimeWindowAlarm();
 }
@@ -303,17 +303,17 @@ async function handleMidnightRollover() {
   try {
     await stopTracking();
   } catch (e) {
-    console.error('BlankSlate: stopTracking failed in midnight rollover:', e);
+    console.error('TimedFocus: stopTracking failed in midnight rollover:', e);
   }
   try {
     await rebuildAllRules();
   } catch (e) {
-    console.error('BlankSlate: rebuildAllRules failed in midnight rollover:', e);
+    console.error('TimedFocus: rebuildAllRules failed in midnight rollover:', e);
   }
   try {
     await evaluateCurrentTab();
   } catch (e) {
-    console.error('BlankSlate: evaluateCurrentTab failed in midnight rollover:', e);
+    console.error('TimedFocus: evaluateCurrentTab failed in midnight rollover:', e);
   }
 
   // Reschedule next midnight alarm
