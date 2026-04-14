@@ -215,7 +215,7 @@ function renderSiteChips(group) {
     chip.className = 'chip';
     chip.innerHTML = `
       ${escapeHtml(site.pattern)}
-      <button class="chip-remove" data-site-id="${site.id}" title="Remove">&times;</button>
+      <button class="chip-remove" title="Remove">&times;</button>
     `;
     chip.querySelector('.chip-remove').addEventListener('click', async () => {
       await removeSiteFromGroup(group.id, site.id);
