@@ -191,6 +191,30 @@ function setupEventListeners() {
     formState.allowedMinutes = parseInt(btn.dataset.budget, 10);
     renderEditor();
   });
+
+  const budgetInput = document.getElementById('budgetNumber');
+  budgetInput.addEventListener('input', () => {
+    if (!formState) return;
+    const digits = budgetInput.value.replace(/\D/g, '').slice(0, 4);
+    if (digits !== budgetInput.value) budgetInput.value = digits;
+    const n = parseInt(digits, 10);
+    if (Number.isFinite(n) && n > 0) {
+      formState.allowedMinutes = Math.min(n, 1440);
+      renderEditor();
+    }
+  });
+  budgetInput.addEventListener('blur', () => {
+    if (!formState) return;
+    const n = parseInt(budgetInput.value, 10);
+    const clamped = Number.isFinite(n) && n > 0 ? Math.min(n, 1440) : formState.allowedMinutes;
+    formState.allowedMinutes = clamped;
+    budgetInput.value = String(clamped);
+    renderEditor();
+  });
+  budgetInput.addEventListener('focus', () => budgetInput.select());
+  budgetInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') { e.preventDefault(); budgetInput.blur(); }
+  });
 }
 
 function buildStaticTimeBlockControls() {
@@ -505,7 +529,10 @@ function renderEditor() {
   });
 
   // Budget readout + chips
-  document.getElementById('budgetNumber').textContent = String(formState.allowedMinutes);
+  const budgetInput = document.getElementById('budgetNumber');
+  if (document.activeElement !== budgetInput) {
+    budgetInput.value = String(formState.allowedMinutes);
+  }
   document.querySelectorAll('#budgetChips [data-budget]').forEach(chip => {
     chip.classList.toggle('active', parseInt(chip.dataset.budget, 10) === formState.allowedMinutes);
   });

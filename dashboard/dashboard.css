@@ -760,13 +760,43 @@ body {
     gap: 8px;
 }
 
-.budget-value #budgetNumber {
+.budget-number-input {
     font-family: var(--bs-font-sans);
     font-size: 44px;
     font-weight: 700;
     color: var(--bs-text);
     line-height: 1;
     letter-spacing: -0.02em;
+    width: 2.2ch;
+    field-sizing: content;
+    min-width: 1ch;
+    padding: 0 2px 4px 2px;
+    margin: 0;
+    border: none;
+    border-bottom: 1.5px dashed var(--bs-border-strong, #c8cdd6);
+    border-radius: 0;
+    background: transparent;
+    outline: none;
+    text-align: left;
+    appearance: none;
+    -moz-appearance: textfield;
+    cursor: text;
+    transition: border-color 0.15s;
+}
+
+.budget-number-input::-webkit-outer-spin-button,
+.budget-number-input::-webkit-inner-spin-button {
+    appearance: none;
+    margin: 0;
+}
+
+.budget-number-input:hover {
+    border-bottom-color: var(--bs-text-secondary);
+}
+
+.budget-number-input:focus {
+    border-bottom-style: solid;
+    border-bottom-color: var(--bs-primary);
 }
 
 .budget-unit {
