@@ -18,7 +18,7 @@ A Chrome extension that blocks distracting websites and helps you manage your br
 
 1. Clone or download this repository:
    ```
-   git clone https://github.com/jeffbuze/focus-chrome.git
+   git clone https://github.com/BlankSlateLabs/focus-chrome.git
    ```
 2. Open Chrome and go to `chrome://extensions`
 3. Enable **Developer mode** (toggle in the top-right corner)
