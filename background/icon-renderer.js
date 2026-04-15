@@ -199,6 +199,15 @@ export async function updateIcon(state, text = '') {
   }
 }
 
+// Forces the next updateIcon call to re-run chrome.action.setIcon even if the state
+// hasn't changed. Used when we suspect Chrome has cleared the imageData out from under
+// us (e.g. after the popup closes) and the drawn icon has diverged from our cache.
+export function invalidateIconCache() {
+  if (updateIcon.cache) {
+    updateIcon.cache.key = null;
+  }
+}
+
 // Returns just the number as a string (no unit suffix).
 // Color communicates the unit: green = minutes, amber = seconds.
 export function formatBadgeTime(seconds) {

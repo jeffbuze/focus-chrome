@@ -9,6 +9,17 @@ const CONFIRMATION_PHRASE = "i know i should be focusing, but i need to do somet
 let currentGroupId = null;
 let currentBlockedUrl = null;
 
+// Keep a port open for the lifetime of the popup. The service worker listens for
+// disconnect and re-renders the toolbar icon — fixes cases where the icon reverts
+// to the manifest default after the popup closes.
+const lifetimePort = chrome.runtime.connect({ name: 'popup' });
+lifetimePort.onDisconnect.addListener(() => {
+  // Reading lastError silences the "Could not establish connection" warning that
+  // Chrome emits when the SW was cold at connect time. The onConnect listener on
+  // the SW side still runs, so the disconnect side effect we care about still fires.
+  void chrome.runtime.lastError;
+});
+
 async function init() {
   // Open dashboard link
   document.getElementById('openDashboard').addEventListener('click', (e) => {
