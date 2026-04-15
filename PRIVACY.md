@@ -1,6 +1,6 @@
 # Privacy Policy — Timed Focus
 
-_Last updated: April 14, 2026_
+_Last updated: April 15, 2026_
 
 Timed Focus is a Chrome extension that helps you block distracting websites and manage browsing time against schedules you configure. This policy explains what the extension stores, where it stores it, and what it does not do.
 
@@ -28,11 +28,11 @@ This data stays on your device until you remove it (by deleting a group, uninsta
 ## Permissions and why they are needed
 
 - **`storage`** — Save your groups, schedules, and tracking data locally on your device.
-- **`tabs` / `activeTab`** — Read the URL of the current tab to determine whether it matches one of your blocked site patterns and whether to track time against it.
+- **`tabs`** — Read the URL of the current tab to determine whether it matches one of your blocked site patterns and whether to track time against it.
 - **`alarms`** — Run periodic checks (e.g. when a time window ends, when paused time expires) without needing the extension's popup to be open.
 - **`idle`** — Pause time tracking when your computer is idle so that leaving a tab open while you step away does not burn your time budget.
 - **`declarativeNetRequest`** — Redirect requests to sites that are currently blocked to the extension's local "blocked" page. Redirection is handled by Chrome using rules the extension generates from your configuration; the extension does not see or log individual requests.
-- **`host_permissions: <all_urls>`** — Required so that the blocking rules above can redirect any site you choose to add to a group. The extension does not read page content; it only matches URLs against the patterns you configured.
+- **Host permissions (`http://*/*`, `https://*/*`)** — Required so that the blocking rules above can redirect any site you choose to add to a group. The extension does not read page content; it only matches URLs against the patterns you configured.
 
 ## What the extension does not do
 
