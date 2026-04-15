@@ -10,7 +10,7 @@ import {
   evaluateCurrentTab, stopTracking, onPersistAlarm, getTrackingState,
   IDLE_DETECTION_SECONDS, setIdleState,
 } from './time-tracker.js';
-import { updateIcon } from './icon-renderer.js';
+import { updateIcon, invalidateIconCache } from './icon-renderer.js';
 
 const ALARM_PERSIST = 'persist-tick';
 const ALARM_MIDNIGHT = 'midnight-rollover';
@@ -113,8 +113,22 @@ chrome.alarms.onAlarm.addListener(async (alarm) => {
       await handlePauseExpiry(groupId);
     }
   } catch (e) {
-    console.error('BlankSlate: Unhandled error in alarm handler:', alarm.name, e);
+    console.error('TimedFocus: Unhandled error in alarm handler:', alarm.name, e);
   }
+});
+
+// The popup opens a port so we can detect when it closes. In MV3, chrome.action.setIcon
+// with imageData is tied to the service worker lifetime — if the SW terminates, the icon
+// reverts to manifest default_icon. Opening the popup can precipitate SW churn; listening
+// for the port's disconnect lets us re-render the icon once the popup is gone.
+chrome.runtime.onConnect.addListener((port) => {
+  if (port.name !== 'popup') return;
+  port.onDisconnect.addListener(() => {
+    invalidateIconCache();
+    evaluateCurrentTab().catch((e) => {
+      console.warn('TimedFocus: evaluateCurrentTab failed after popup close:', e);
+    });
+  });
 });
 
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
@@ -178,7 +192,7 @@ async function initialize() {
     // Evaluate current tab
     await evaluateCurrentTab();
   } catch (e) {
-    console.error('BlankSlate Focus initialization error:', e);
+    console.error('Timed Focus initialization error:', e);
   }
 }
 
@@ -235,12 +249,12 @@ async function handleTimeWindowBoundary() {
   try {
     await rebuildAllRules();
   } catch (e) {
-    console.error('BlankSlate: rebuildAllRules failed in time-window boundary:', e);
+    console.error('TimedFocus: rebuildAllRules failed in time-window boundary:', e);
   }
   try {
     await evaluateCurrentTab();
   } catch (e) {
-    console.error('BlankSlate: evaluateCurrentTab failed in time-window boundary:', e);
+    console.error('TimedFocus: evaluateCurrentTab failed in time-window boundary:', e);
   }
   await scheduleNextTimeWindowAlarm();
 }
@@ -281,17 +295,17 @@ async function handlePauseExpiry(groupId) {
   try {
     await clearPause(groupId);
   } catch (e) {
-    console.error('BlankSlate: clearPause failed in pause-expiry:', e);
+    console.error('TimedFocus: clearPause failed in pause-expiry:', e);
   }
   try {
     await rebuildAllRules();
   } catch (e) {
-    console.error('BlankSlate: rebuildAllRules failed in pause-expiry:', e);
+    console.error('TimedFocus: rebuildAllRules failed in pause-expiry:', e);
   }
   try {
     await evaluateCurrentTab();
   } catch (e) {
-    console.error('BlankSlate: evaluateCurrentTab failed in pause-expiry:', e);
+    console.error('TimedFocus: evaluateCurrentTab failed in pause-expiry:', e);
   }
   await scheduleNextTimeWindowAlarm();
 }
@@ -303,17 +317,17 @@ async function handleMidnightRollover() {
   try {
     await stopTracking();
   } catch (e) {
-    console.error('BlankSlate: stopTracking failed in midnight rollover:', e);
+    console.error('TimedFocus: stopTracking failed in midnight rollover:', e);
   }
   try {
     await rebuildAllRules();
   } catch (e) {
-    console.error('BlankSlate: rebuildAllRules failed in midnight rollover:', e);
+    console.error('TimedFocus: rebuildAllRules failed in midnight rollover:', e);
   }
   try {
     await evaluateCurrentTab();
   } catch (e) {
-    console.error('BlankSlate: evaluateCurrentTab failed in midnight rollover:', e);
+    console.error('TimedFocus: evaluateCurrentTab failed in midnight rollover:', e);
   }
 
   // Reschedule next midnight alarm

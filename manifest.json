@@ -1,18 +1,18 @@
 {
   "manifest_version": 3,
-  "name": "BlankSlate Focus",
+  "name": "Timed Focus",
   "version": "1.0.0",
   "description": "Block distracting websites and manage your browsing time with customizable groups and schedules.",
   "permissions": [
     "storage",
     "tabs",
-    "activeTab",
     "alarms",
     "idle",
     "declarativeNetRequest"
   ],
   "host_permissions": [
-    "<all_urls>"
+    "http://*/*",
+    "https://*/*"
   ],
   "background": {
     "service_worker": "background/service-worker.js",
@@ -39,7 +39,7 @@
         "blocked/blocked.html",
         "assets/inspirational-quotes.json"
       ],
-      "matches": ["<all_urls>"]
+      "matches": ["http://*/*", "https://*/*"]
     }
   ]
 }

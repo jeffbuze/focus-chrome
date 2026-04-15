@@ -3,13 +3,8 @@
     <head>
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title>BlankSlate Focus — Dashboard</title>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-        <link
-            href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
-            rel="stylesheet"
-        />
+        <title>Timed Focus — Dashboard</title>
+        <link rel="stylesheet" href="../fonts/fonts.css" />
         <link rel="stylesheet" href="dashboard.css" />
     </head>
     <body>
@@ -28,21 +23,19 @@
                             <circle
                                 cx="12"
                                 cy="12"
-                                r="10"
-                                stroke="#EA4335"
-                                stroke-width="3"
-                                fill="none"
+                                r="11"
+                                fill="#D94A3D"
                             />
                             <rect
-                                x="5.5"
-                                y="10.5"
-                                width="13"
-                                height="3"
-                                rx="1.5"
-                                fill="#2A2A2A"
+                                x="5"
+                                y="10.25"
+                                width="14"
+                                height="3.5"
+                                rx="1.75"
+                                fill="#FFFFFF"
                             /></svg
                     ></span>
-                    <h1>BlankSlate Focus</h1>
+                    <h1>Timed Focus</h1>
                 </div>
                 <div class="group-list" id="groupList"></div>
                 <button class="add-group-btn" id="addGroupBtn">
@@ -64,22 +57,20 @@
                             <circle
                                 cx="12"
                                 cy="12"
-                                r="10"
-                                stroke="#EA4335"
-                                stroke-width="3"
-                                fill="none"
+                                r="11"
+                                fill="#D94A3D"
                             />
                             <rect
-                                x="5.5"
-                                y="10.5"
-                                width="13"
-                                height="3"
-                                rx="1.5"
-                                fill="#2A2A2A"
+                                x="5"
+                                y="10.25"
+                                width="14"
+                                height="3.5"
+                                rx="1.75"
+                                fill="#FFFFFF"
                             />
                         </svg>
                     </div>
-                    <h2>Welcome to BlankSlate Focus</h2>
+                    <h2>Welcome to Timed Focus</h2>
                     <p>
                         Create your first group to start blocking distracting
                         websites.
@@ -135,114 +126,133 @@
                     </section>
 
                     <!-- Allowed Time Windows -->
-                    <section class="detail-section">
-                        <h2>Allowed Time Windows</h2>
+                    <section class="detail-section time-windows-section">
+                        <header class="section-head">
+                            <h2>Allowed Time Windows</h2>
+                            <span
+                                class="window-editor-status"
+                                id="windowEditorStatus"
+                            ></span>
+                        </header>
                         <div id="timeBlocksList"></div>
-                        <div
-                            id="timeBlockForm"
-                            style="display: none"
-                            class="time-block-form"
-                        >
-                            <div class="form-group">
-                                <label>Days</label>
-                                <div class="day-checkboxes" id="dayCheckboxes">
-                                    <label
-                                        ><input type="checkbox" value="mon" />
-                                        Mon</label
-                                    >
-                                    <label
-                                        ><input type="checkbox" value="tue" />
-                                        Tue</label
-                                    >
-                                    <label
-                                        ><input type="checkbox" value="wed" />
-                                        Wed</label
-                                    >
-                                    <label
-                                        ><input type="checkbox" value="thu" />
-                                        Thu</label
-                                    >
-                                    <label
-                                        ><input type="checkbox" value="fri" />
-                                        Fri</label
-                                    >
-                                    <label
-                                        ><input type="checkbox" value="sat" />
-                                        Sat</label
-                                    >
-                                    <label
-                                        ><input type="checkbox" value="sun" />
-                                        Sun</label
-                                    >
+                        <div id="timeBlockForm" class="time-block-form" hidden>
+                            <!-- Days block -->
+                            <div class="form-block">
+                                <div class="form-block-head">
+                                    <label>Days</label>
+                                    <div class="day-quick-selects">
+                                        <button
+                                            type="button"
+                                            data-day-preset="weekdays"
+                                        >
+                                            Weekdays
+                                        </button>
+                                        <button
+                                            type="button"
+                                            data-day-preset="weekends"
+                                        >
+                                            Weekends
+                                        </button>
+                                        <button
+                                            type="button"
+                                            data-day-preset="everyday"
+                                        >
+                                            Everyday
+                                        </button>
+                                    </div>
                                 </div>
-                                <div class="day-actions">
-                                    <button
-                                        type="button"
-                                        class="btn btn-link btn-xs"
-                                        id="selectAllDays"
-                                    >
-                                        Select All
-                                    </button>
-                                    <button
-                                        type="button"
-                                        class="btn btn-link btn-xs"
-                                        id="deselectAllDays"
-                                    >
-                                        Deselect All
-                                    </button>
-                                </div>
+                                <div class="day-pills" id="dayPills"></div>
                             </div>
 
-                            <div class="form-group">
-                                <label>
-                                    <input type="checkbox" id="allDayCheck" />
-                                    All Day
-                                </label>
-                            </div>
-
-                            <div class="form-row" id="timeInputRow">
-                                <div class="form-group">
-                                    <label>Start Time</label>
-                                    <input
-                                        type="time"
-                                        id="startTimeInput"
-                                        value="09:00"
-                                    />
+                            <!-- Window block -->
+                            <div class="form-block">
+                                <div class="form-block-head">
+                                    <label>Window</label>
+                                    <label class="all-day-toggle">
+                                        <span>All day</span>
+                                        <input
+                                            type="checkbox"
+                                            id="allDayCheck"
+                                            class="switch-input"
+                                        />
+                                        <span class="switch-track"></span>
+                                    </label>
                                 </div>
-                                <div class="form-group">
-                                    <label>End Time</label>
-                                    <input
-                                        type="time"
-                                        id="endTimeInput"
-                                        value="17:00"
-                                    />
+                                <div class="window-inputs">
+                                    <div class="field">
+                                        <span class="field-label">Start</span>
+                                        <input
+                                            type="time"
+                                            id="startTimeInput"
+                                            value="09:00"
+                                        />
+                                    </div>
+                                    <span class="arrow">→</span>
+                                    <div class="field">
+                                        <span class="field-label">End</span>
+                                        <input
+                                            type="time"
+                                            id="endTimeInput"
+                                            value="12:00"
+                                        />
+                                    </div>
+                                    <span
+                                        class="duration-display"
+                                        id="durationDisplay"
+                                    ></span>
+                                </div>
+                                <div class="presets-block">
+                                    <span class="field-label">Quick presets</span>
+                                    <div
+                                        class="preset-chips"
+                                        id="windowPresets"
+                                    ></div>
                                 </div>
                             </div>
 
-                            <div class="form-group">
-                                <label>Allowed Minutes</label>
-                                <input
-                                    type="number"
-                                    id="allowedMinutesInput"
-                                    value="15"
-                                    min="1"
-                                    class="minutes-input"
-                                />
+                            <!-- Budget block -->
+                            <div class="form-block budget-block">
+                                <div class="budget-readout">
+                                    <span class="field-label">Allowed minutes</span>
+                                    <div class="budget-value">
+                                        <input
+                                            type="text"
+                                            inputmode="numeric"
+                                            id="budgetNumber"
+                                            class="budget-number-input"
+                                            value="25"
+                                            maxlength="4"
+                                            aria-label="Allowed minutes per day"
+                                        />
+                                        <span class="budget-unit">minutes / day</span>
+                                    </div>
+                                </div>
+                                <div
+                                    class="budget-chips"
+                                    id="budgetChips"
+                                ></div>
                             </div>
 
+                            <!-- Actions -->
                             <div class="form-actions">
-                                <button
-                                    class="btn btn-primary btn-sm"
-                                    id="saveTimeBlockBtn"
-                                >
-                                    Save
-                                </button>
-                                <button
-                                    class="btn btn-outline btn-sm"
-                                    id="cancelTimeBlockBtn"
-                                >
-                                    Cancel
-                                </button>
+                                <span
+                                    class="form-summary"
+                                    id="formSummary"
+                                ></span>
+                                <div class="btn-group">
+                                    <button
+                                        class="btn btn-outline btn-sm"
+                                        id="cancelTimeBlockBtn"
+                                    >
+                                        Cancel
+                                    </button>
+                                    <button
+                                        class="btn btn-primary btn-sm"
+                                        id="saveTimeBlockBtn"
+                                    >
+                                        Save
+                                    </button>
+                                </div>
                             </div>
                         </div>
                         <button

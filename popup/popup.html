@@ -3,17 +3,15 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>BlankSlate Focus</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <title>Timed Focus</title>
+  <link rel="stylesheet" href="../fonts/fonts.css">
   <link rel="stylesheet" href="popup.css">
 </head>
 <body>
   <div class="popup">
     <header class="popup-header">
-      <span class="logo"><svg class="logo-icon" width="1em" height="1em" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="#EA4335" stroke-width="3" fill="none"/><rect x="5.5" y="10.5" width="13" height="3" rx="1.5" fill="#2A2A2A"/></svg></span>
-      <h1>BlankSlate Focus</h1>
+      <span class="logo"><svg class="logo-icon" width="1em" height="1em" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="11" fill="#D94A3D"/><rect x="5" y="10.25" width="14" height="3.5" rx="1.75" fill="#FFFFFF"/></svg></span>
+      <h1>Timed Focus</h1>
     </header>
 
     <!-- Status section shown when on a matched site -->
@@ -45,7 +43,7 @@
     <!-- Active pause info -->
     <section class="active-pause-section" id="activePauseSection" style="display:none;">
       <div class="active-pause-card">
-        <p class="active-pause-text"><svg class="logo-icon" width="1em" height="1em" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="#EA4335" stroke-width="3" fill="none"/><rect x="5.5" y="10.5" width="13" height="3" rx="1.5" fill="#2A2A2A"/></svg> Paused for <span id="pauseRemaining"></span></p>
+        <p class="active-pause-text"><svg class="logo-icon" width="1em" height="1em" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="11" fill="#D94A3D"/><rect x="5" y="10.25" width="14" height="3.5" rx="1.75" fill="#FFFFFF"/></svg> Paused for <span id="pauseRemaining"></span></p>
         <button class="end-pause-btn" id="endPauseBtn">End Pause</button>
       </div>
     </section>

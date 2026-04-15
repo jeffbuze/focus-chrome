@@ -36,7 +36,7 @@ function displayReason() {
       el.textContent = 'No access window is currently active for this group.';
       break;
     default:
-      el.textContent = 'This site is currently blocked by BlankSlate Focus.';
+      el.textContent = 'This site is currently blocked by Timed Focus.';
   }
 }
 
