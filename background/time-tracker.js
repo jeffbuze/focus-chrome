@@ -197,9 +197,10 @@ function matchesTrackingSession(resolvedState) {
 }
 
 async function renderTrackingBadge(remainingSeconds) {
+  // State drives icon color: green (timer) for minutes, amber (urgent) for <60s.
+  // The number itself is painted inside the circle — no separate badge.
   const state = remainingSeconds <= 60 ? 'urgent' : 'timer';
-  const badgeBg = remainingSeconds <= 60 ? '#F4B400' : '#34A853';
-  await updateIcon(state, formatBadgeTime(remainingSeconds), badgeBg);
+  await updateIcon(state, formatBadgeTime(remainingSeconds));
 }
 
 async function redirectTabToBlockedPage(tabId, group, decision, url) {
@@ -232,13 +233,13 @@ export async function evaluateCurrentTab() {
 
   if (resolvedState.status === 'blocked') {
     await stopTracking();
-    await updateIcon('blocked', 'X', '#EA4335');
+    await updateIcon('blocked');
     return;
   }
 
   if (resolvedState.status === 'redirect-blocked') {
     await stopTracking();
-    await updateIcon('blocked', 'X', '#EA4335');
+    await updateIcon('blocked');
     await redirectTabToBlockedPage(
       resolvedState.tabId,
       resolvedState.group,
@@ -250,7 +251,7 @@ export async function evaluateCurrentTab() {
 
   if (resolvedState.status === 'paused') {
     await stopTracking();
-    await updateIcon('paused', formatBadgeTime(resolvedState.pauseRemaining), '#9E9E9E');
+    await updateIcon('paused');
     return;
   }
 
@@ -382,7 +383,7 @@ async function tick() {
     try {
       const context = await getForegroundTabContext();
       if (!context || context.windowId !== windowId || context.tab.id !== tabId) {
-        await updateIcon('blocked', 'X', '#EA4335');
+        await updateIcon('blocked');
         return;
       }
 
@@ -399,14 +400,13 @@ async function tick() {
       console.warn('Failed to redirect tab after budget exhaustion:', e);
     }
 
-    await updateIcon('blocked', 'X', '#EA4335');
+    await updateIcon('blocked');
     return;
   }
 
-  // Update icon
+  // Update icon — green circle (timer) for minutes, amber circle (urgent) for <60s.
   const state = remaining <= 60 ? 'urgent' : 'timer';
-  const badgeBg = remaining <= 60 ? '#F4B400' : '#34A853';
-  await updateIcon(state, formatBadgeTime(remaining), badgeBg);
+  await updateIcon(state, formatBadgeTime(remaining));
 }
 
 // Called by alarm handler to persist state periodically
