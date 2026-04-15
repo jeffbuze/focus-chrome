@@ -368,6 +368,64 @@ body {
     text-decoration: underline;
 }
 
+/* Pause limits form */
+.form-group {
+    margin-bottom: 0;
+}
+
+.form-group label {
+    display: block;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--bs-text);
+    margin-bottom: 6px;
+}
+
+.form-group input[type="number"] {
+    padding: 8px 10px;
+    border: 1px solid var(--bs-border);
+    border-radius: var(--bs-radius);
+    font-family: var(--bs-font-mono);
+    font-size: 13px;
+    color: var(--bs-text);
+    background: var(--bs-surface);
+    outline: none;
+    transition: border-color 0.15s;
+}
+
+.form-group input[type="number"]:focus {
+    border-color: var(--bs-primary);
+}
+
+.minutes-input {
+    max-width: 120px;
+}
+
+.field-help {
+    margin-top: 6px;
+    font-size: 12px;
+    color: var(--bs-text-secondary);
+}
+
+/* Time windows section header */
+.time-windows-section .section-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+.time-windows-section .section-head h2 {
+    margin-bottom: 0;
+}
+
+.window-editor-status {
+    font-size: 12px;
+    color: var(--bs-text-tertiary);
+    font-weight: 500;
+}
+
 /* Time block cards */
 .time-block-card {
     background: var(--bs-surface);
@@ -376,17 +434,24 @@ body {
     padding: 14px 16px;
     margin-bottom: 10px;
     display: flex;
-    align-items: flex-start;
+    align-items: center;
     justify-content: space-between;
     gap: 12px;
+    transition: border-color 0.15s;
+}
+
+.time-block-card.editing {
+    border-color: var(--bs-primary);
+    box-shadow: 0 0 0 3px var(--bs-primary-subtle);
 }
 
 .time-block-info {
     flex: 1;
+    min-width: 0;
 }
 
 .time-block-days {
-    font-size: 13px;
+    font-size: 14px;
     font-weight: 600;
     color: var(--bs-text);
     margin-bottom: 4px;
@@ -398,123 +463,373 @@ body {
     color: var(--bs-text-secondary);
 }
 
-.time-block-budget {
-    font-family: var(--bs-font-mono);
-    font-size: 12px;
-    color: var(--bs-primary);
-    font-weight: 500;
-    margin-top: 2px;
-}
-
 .time-block-actions {
     display: flex;
-    gap: 4px;
+    gap: 6px;
+    flex-shrink: 0;
 }
 
-.edit-block-btn,
-.remove-block-btn {
-    background: none;
+.time-block-btn {
+    background: var(--bs-surface);
     border: 1px solid var(--bs-border);
     border-radius: var(--bs-radius-sm);
-    padding: 4px 8px;
+    padding: 4px 10px;
+    font-family: var(--bs-font-sans);
     font-size: 12px;
+    font-weight: 500;
+    color: var(--bs-text);
     cursor: pointer;
-    color: var(--bs-text-secondary);
     transition: all 0.15s;
 }
 
-.edit-block-btn:hover {
+.time-block-btn:hover {
     border-color: var(--bs-primary);
     color: var(--bs-primary);
 }
 
-.remove-block-btn:hover {
+.time-block-btn.remove-block-btn:hover {
     border-color: var(--bs-danger);
     color: var(--bs-danger);
 }
 
 /* Time block form */
 .time-block-form {
-    background: var(--bs-bg);
-    border-radius: var(--bs-radius);
+    background: var(--bs-surface);
+    border-radius: var(--bs-radius-lg);
     padding: 20px;
     margin-bottom: 12px;
     border: 1px solid var(--bs-border);
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
 }
 
-.form-group {
-    margin-bottom: 14px;
+.time-block-form[hidden] {
+    display: none;
 }
 
-.form-group label {
-    display: block;
-    font-size: 13px;
-    font-weight: 500;
+.form-block {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.form-block-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.form-block-head > label {
+    font-size: 14px;
+    font-weight: 600;
     color: var(--bs-text);
+}
+
+.field-label {
+    display: block;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--bs-text-tertiary);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
     margin-bottom: 6px;
 }
 
-.form-row {
-    display: flex;
-    gap: 16px;
-}
-
-.form-row .form-group {
-    flex: 1;
-}
-
-.day-checkboxes {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 6px 12px;
-}
-
-.day-checkboxes label {
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-    font-size: 13px;
-    font-weight: 400;
-    cursor: pointer;
-}
-
-.day-actions {
-    margin-top: 6px;
+/* Day pills */
+.day-pills {
     display: flex;
     gap: 8px;
 }
 
-input[type="time"],
-input[type="number"] {
-    padding: 8px 10px;
+.day-pill {
+    flex: 1;
+    min-width: 0;
+    height: 44px;
+    border-radius: var(--bs-radius);
+    border: 1px solid var(--bs-border);
+    background: var(--bs-surface);
+    font-family: var(--bs-font-sans);
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--bs-text);
+    cursor: pointer;
+    transition: all 0.15s;
+}
+
+.day-pill:hover {
+    border-color: var(--bs-primary);
+    color: var(--bs-primary);
+}
+
+.day-pill.active {
+    background: var(--bs-primary);
+    border-color: var(--bs-primary);
+    color: #fff;
+}
+
+/* Day quick-selects */
+.day-quick-selects {
+    display: flex;
+    gap: 14px;
+}
+
+.day-quick-selects button {
+    background: none;
+    border: none;
+    padding: 0;
+    font-family: var(--bs-font-sans);
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--bs-text-tertiary);
+    cursor: pointer;
+    transition: color 0.15s;
+}
+
+.day-quick-selects button:hover {
+    color: var(--bs-text);
+}
+
+.day-quick-selects button.active {
+    color: var(--bs-primary);
+    font-weight: 600;
+}
+
+/* All-day toggle switch */
+.all-day-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--bs-text);
+    cursor: pointer;
+    user-select: none;
+}
+
+.switch-input {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.switch-track {
+    display: inline-block;
+    width: 32px;
+    height: 18px;
+    background: var(--bs-border);
+    border-radius: 9px;
+    position: relative;
+    transition: background 0.2s;
+}
+
+.switch-track::after {
+    content: '';
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 14px;
+    height: 14px;
+    background: #fff;
+    border-radius: 50%;
+    transition: transform 0.2s;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
+}
+
+.switch-input:checked + .switch-track {
+    background: var(--bs-primary);
+}
+
+.switch-input:checked + .switch-track::after {
+    transform: translateX(14px);
+}
+
+/* Window inputs row */
+.window-inputs {
+    display: flex;
+    align-items: flex-end;
+    gap: 12px;
+}
+
+.window-inputs .field {
+    flex: 1;
+    min-width: 0;
+}
+
+.window-inputs.disabled .field {
+    opacity: 0.5;
+}
+
+.window-inputs input[type="time"] {
+    width: 100%;
+    padding: 10px 12px;
     border: 1px solid var(--bs-border);
     border-radius: var(--bs-radius);
     font-family: var(--bs-font-mono);
-    font-size: 13px;
+    font-size: 14px;
     color: var(--bs-text);
+    background: var(--bs-surface);
     outline: none;
-    width: 100%;
+    transition: border-color 0.15s;
 }
 
-input[type="time"]:focus,
-input[type="number"]:focus {
+.window-inputs input[type="time"]:focus {
     border-color: var(--bs-primary);
+    box-shadow: 0 0 0 3px var(--bs-primary-subtle);
 }
 
-.minutes-input {
-    max-width: 120px;
+.window-inputs .arrow {
+    font-size: 18px;
+    color: var(--bs-text-tertiary);
+    padding-bottom: 10px;
+    flex-shrink: 0;
 }
 
-.form-actions {
-    display: flex;
-    gap: 8px;
+.duration-display {
+    font-family: var(--bs-font-mono);
+    font-size: 13px;
+    color: var(--bs-text-secondary);
+    padding-bottom: 12px;
+    flex-shrink: 0;
+    white-space: nowrap;
+}
+
+/* Preset chips (quick presets and budget chips share .chip styling) */
+.presets-block {
     margin-top: 4px;
 }
 
-.field-help {
-    margin-top: 6px;
+.preset-chips,
+.budget-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.preset-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 12px;
+    border-radius: 20px;
+    background: var(--bs-surface);
+    border: 1px solid var(--bs-border);
+    font-family: var(--bs-font-sans);
+    font-size: 13px;
+    color: var(--bs-text);
+    cursor: pointer;
+    transition: all 0.15s;
+}
+
+.preset-chip .preset-range {
+    font-family: var(--bs-font-mono);
+    font-size: 12px;
+    color: var(--bs-text-tertiary);
+}
+
+.preset-chip:hover {
+    border-color: var(--bs-primary);
+}
+
+.preset-chip.active {
+    background: var(--bs-primary);
+    border-color: var(--bs-primary);
+    color: #fff;
+}
+
+.preset-chip.active .preset-range {
+    color: rgba(255, 255, 255, 0.85);
+}
+
+/* Budget block */
+.budget-block {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+}
+
+.budget-readout {
+    flex-shrink: 0;
+}
+
+.budget-value {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+}
+
+.budget-value #budgetNumber {
+    font-family: var(--bs-font-sans);
+    font-size: 44px;
+    font-weight: 700;
+    color: var(--bs-text);
+    line-height: 1;
+    letter-spacing: -0.02em;
+}
+
+.budget-unit {
+    font-size: 13px;
+    color: var(--bs-text-secondary);
+}
+
+.budget-chip {
+    min-width: 42px;
+    padding: 6px 12px;
+    border-radius: 20px;
+    background: var(--bs-surface);
+    border: 1px solid var(--bs-border);
+    font-family: var(--bs-font-mono);
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--bs-text);
+    cursor: pointer;
+    transition: all 0.15s;
+}
+
+.budget-chip:hover {
+    border-color: var(--bs-primary);
+    color: var(--bs-primary);
+}
+
+.budget-chip.active {
+    background: var(--bs-primary);
+    border-color: var(--bs-primary);
+    color: #fff;
+}
+
+/* Form actions */
+.time-block-form .form-actions {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-top: 0;
+    padding-top: 16px;
+    border-top: 1px solid var(--bs-border-light);
+}
+
+.form-summary {
     font-size: 12px;
     color: var(--bs-text-secondary);
+    flex: 1;
+    min-width: 0;
+}
+
+.form-summary.error {
+    color: var(--bs-danger);
+}
+
+.form-actions .btn-group {
+    display: flex;
+    gap: 8px;
+    flex-shrink: 0;
+}
+
+.btn[disabled] {
+    opacity: 0.5;
+    cursor: not-allowed;
 }
 
 /* Usage bars */
