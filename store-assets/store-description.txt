@@ -1,0 +1,75 @@
+Timed Focus is a privacy-first website blocker that helps you stay productive — without being cruel about it.
+
+Unlike simple blockers that just lock you out, Timed Focus gives you fine-grained control: organize sites into groups, set the exact hours and days they're allowed, give yourself a daily minute budget for each window, and — when you genuinely need an exception — pause blocking by typing a brief, thoughtful phrase that makes you pause and reflect first.
+
+────────────────────────────────────────
+  FEATURES
+────────────────────────────────────────
+
+▸ Site Groups
+  Organize blocked sites by category — Social Media, News, Shopping, Gaming — whatever makes sense for your life. Each group has its own rules, schedule, and pause limits.
+
+▸ Time Windows with Minute Budgets
+  Don't want to block Reddit entirely — just want to limit it to 15 minutes between 12pm and 1pm on weekdays? Done. Each allowed window gets its own time budget, tracked to the second.
+
+▸ Live Usage Tracking
+  The extension badge shows you a real-time countdown of time remaining in the current window. Today's Usage bars on the dashboard let you see exactly how much of each budget you've spent.
+
+▸ Mindful Pausing
+  Need to access a blocked site right now? You can — but first you have to type a phrase explaining why. It's a small speed bump that turns an impulsive click into a conscious choice. You control how many pauses each group allows per day.
+
+▸ Inspirational Blocked Page
+  When a site is blocked, instead of a jarring error, you see a calm, focused page with an inspirational quote. It's a moment to breathe and refocus rather than scramble for a workaround.
+
+▸ Privacy First — Always
+  Timed Focus stores everything locally on your device. No accounts. No sync to external servers. No analytics. No telemetry. Your browsing habits are yours alone.
+
+▸ Zero Bloat
+  Pure Chrome extension — no Node.js, no bundler, no third-party tracking SDKs. The entire extension is vanilla JavaScript and runs entirely within Chrome's built-in APIs.
+
+────────────────────────────────────────
+  HOW IT WORKS
+────────────────────────────────────────
+
+1. Open the dashboard and create a group (e.g., "Social Media").
+2. Add sites to the group (e.g., twitter.com, instagram.com, reddit.com).
+3. Optionally set allowed time windows — specific days, hours, and a minute budget.
+4. Set a daily pause limit so you can't repeatedly override your own rules.
+5. Go be productive. Timed Focus handles the rest.
+
+When you visit a blocked site outside its allowed window (or after the budget runs out), you'll see the focused blocked page instead. If you truly need access, use a mindful pause — but you'll have to justify it to yourself first.
+
+────────────────────────────────────────
+  PERMISSIONS EXPLAINED
+────────────────────────────────────────
+
+• storage — saves your groups and settings locally on your device
+• tabs — detects the current tab URL to show status in the popup
+• alarms — schedules time-window checks and badge countdown updates
+• idle — pauses time tracking when your screen is idle
+• declarativeNetRequest — performs the actual site blocking efficiently via Chrome's built-in blocking API (no reading of page content)
+• Host permissions — required for declarativeNetRequest to apply rules across all URLs
+
+No permission is used to read page content, track browsing history, or communicate with external servers.
+
+────────────────────────────────────────
+  PERFECT FOR
+────────────────────────────────────────
+
+• Deep work sessions where distractions are the enemy
+• Students who need to stay off social media during study hours
+• Remote workers whose home setup blurs the line between work and play
+• Anyone who's tried willpower alone and found it insufficient
+• People who want a blocker with nuance — not just an on/off switch
+
+────────────────────────────────────────
+  OPEN SOURCE
+────────────────────────────────────────
+
+Timed Focus is open source. You can inspect every line of code, verify the privacy claims yourself, and contribute improvements.
+
+────────────────────────────────────────
+
+"Where focus goes, energy flows." — Tony Robbins
+
+Take back your attention. Install Timed Focus.
