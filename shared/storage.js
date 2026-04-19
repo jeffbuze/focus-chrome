@@ -123,26 +123,6 @@ export async function incrementPauseCount(groupId, dateStr) {
   return { count: nextCount };
 }
 
-// ── Rule ID Management ──────────────────────────────────────────────────
-
-export async function getRuleIdMap() {
-  const { ruleIdMap } = await chrome.storage.local.get({ ruleIdMap: {} });
-  return ruleIdMap;
-}
-
-export async function saveRuleIdMap(map) {
-  await chrome.storage.local.set({ ruleIdMap: map });
-}
-
-export async function getNextRuleId() {
-  const { nextRuleId } = await chrome.storage.local.get({ nextRuleId: 1 });
-  return nextRuleId;
-}
-
-export async function saveNextRuleId(id) {
-  await chrome.storage.local.set({ nextRuleId: id });
-}
-
 // ── Settings ────────────────────────────────────────────────────────────
 
 const DEFAULT_SETTINGS = {

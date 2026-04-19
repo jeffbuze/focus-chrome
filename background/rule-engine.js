@@ -1,7 +1,6 @@
 // background/rule-engine.js — Translates group state into declarativeNetRequest rules
 import {
-  getGroups, getNextRuleId, saveNextRuleId,
-  getRuleIdMap, saveRuleIdMap, getPause,
+  getGroups, getPause,
   getTrackingEntry, todayDateStr, getAllActivePauses,
 } from '../shared/storage.js';
 
@@ -196,17 +195,27 @@ export function findMatchingGroups(url, groups) {
   return matches;
 }
 
-export async function rebuildAllRules() {
+// Serialize rebuilds: concurrent callers race on rule IDs, so chain them FIFO.
+let rebuildChain = Promise.resolve();
+
+export function rebuildAllRules() {
+  const next = rebuildChain.then(_rebuildAllRulesInner, _rebuildAllRulesInner);
+  rebuildChain = next.catch(() => {});
+  return next;
+}
+
+async function _rebuildAllRulesInner() {
   const groups = await getGroups();
+  const existingRules = await chrome.declarativeNetRequest.getDynamicRules();
+  const removeRuleIds = existingRules.map(r => r.id);
+
+  let nextId = existingRules.reduce((m, r) => Math.max(m, r.id), 0) + 1;
   const addRules = [];
-  let nextId = await getNextRuleId();
-  const newRuleIdMap = {};
 
   for (const group of groups) {
     const decision = await shouldGroupBlockNow(group);
     if (!decision.block) continue;
 
-    // Generate a redirect rule for each site in the group
     for (const site of group.sites) {
       const regexFilter = sitePatternToRegexFilter(site.pattern);
       const baseRedirectUrl = chrome.runtime.getURL(
@@ -214,7 +223,7 @@ export async function rebuildAllRules() {
       );
 
       addRules.push({
-        id: nextId,
+        id: nextId++,
         priority: 1,
         action: {
           type: 'redirect',
@@ -225,24 +234,13 @@ export async function rebuildAllRules() {
           resourceTypes: ['main_frame'],
         },
       });
-
-      newRuleIdMap[`${group.id}::${site.id}`] = nextId;
-      nextId++;
     }
   }
 
-  // Get existing dynamic rules to remove
-  const existingRules = await chrome.declarativeNetRequest.getDynamicRules();
-  const removeRuleIds = existingRules.map(r => r.id);
-
-  // Atomically update rules
   await chrome.declarativeNetRequest.updateDynamicRules({
     removeRuleIds,
     addRules,
   });
-
-  await saveRuleIdMap(newRuleIdMap);
-  await saveNextRuleId(nextId);
 
   return { addedCount: addRules.length, removedCount: removeRuleIds.length };
 }
